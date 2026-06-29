@@ -134,6 +134,24 @@ def build_talks(raw_talks):
             "session_start": time,
             "session_end": "",
         })
+
+    # Keep every talk session together: talks that share a (day, session, room)
+    # block are listed contiguously and in chronological order, and the blocks
+    # themselves are ordered by start time so parallel sessions (other rooms)
+    # follow one after another rather than interleaving slot by slot.
+    group_start = {}
+    for e in entries:
+        key = (e["date"], e["session_title"], e["room"])
+        t = e["session_start"] or e["time"]
+        if key not in group_start or t < group_start[key]:
+            group_start[key] = t
+    entries.sort(key=lambda e: (
+        e["date"],
+        group_start[(e["date"], e["session_title"], e["room"])],
+        e["room"],
+        e["session_title"],
+        e["time"],
+    ))
     return entries
 
 
