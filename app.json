@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "ECVP 2026 Scheduler",
+    "slug": "ecvp-2026-scheduler",
+    "version": "1.0.0",
+    "icon": "./assets/icon.png",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "web": {
+      "baseUrl": "/ecvp-2026-scheduler",
+      "favicon": "./assets/favicon.png",
+      "name": "ECVP 2026 Scheduler",
+      "shortName": "ECVP 2026",
+      "description": "Search and organize your ECVP 2026 (Bournemouth, August 23–27) conference schedule with full-text search, day/type filters, and calendar export.",
+      "themeColor": "#16324f",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "orientation": "portrait",
+      "startUrl": "/ecvp-2026-scheduler/",
+      "scope": "/ecvp-2026-scheduler/"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#16324f"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
