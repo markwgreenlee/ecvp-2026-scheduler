@@ -48,6 +48,10 @@ DAY_TO_DATE = {
 
 VENUE = "Bournemouth International Centre"
 
+# A few source entries have no title in the published programme; show this so
+# the card still renders and stays searchable by author/abstract.
+TITLE_PLACEHOLDER = "[Title to be announced]"
+
 
 def load_html(name):
     """Return the HTML for a source page, fetching it if --fetch was passed."""
@@ -118,7 +122,7 @@ def build_talks(raw_talks):
             "talk_number": None,
             "time": time,
             "time_tbc": False,
-            "title": clean(t.get("Title")),
+            "title": clean(t.get("Title")) or TITLE_PLACEHOLDER,
             "authors": authors,
             "author_numbers": ["" for _ in authors],
             "affiliations": "",
@@ -183,7 +187,7 @@ def build_posters(raw_posters):
             "talk_number": None,
             "time": start,
             "time_tbc": False,
-            "title": clean(p.get("Title")),
+            "title": clean(p.get("Title")) or TITLE_PLACEHOLDER,
             "authors": authors,
             "author_numbers": ["" for _ in authors],
             "affiliations": "",
