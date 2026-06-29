@@ -162,6 +162,9 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.1.2** (2026-06-29)
+- Poster board numbers now use the authors' blue, making them easier to tell apart from the title
+
 **v1.1.1** (2026-06-29)
 - Added poster board numbers (the programme has none): each poster shows `P{session}.{board}` (e.g. P5.12), numbered 1..n within each of the seven poster sessions, displayed before the title like the IMRF/VSS schedulers
 

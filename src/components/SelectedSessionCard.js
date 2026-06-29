@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   posterId: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#16324f',
+    color: '#1a5fd1',
   },
   details: {
     gap: 3,

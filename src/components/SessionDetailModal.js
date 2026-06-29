@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   posterId: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#16324f',
+    color: '#1a5fd1',
   },
   sessionTitle: {
     fontSize: 13,
