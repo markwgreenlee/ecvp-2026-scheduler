@@ -5,7 +5,7 @@
   "talk_number": null,
   "time": "18:00",
   "time_tbc": true,
-  "title": "Perception Keynote Lecture",
+  "title": "Color Vision — Then and Now",
   "authors": [
    "Karl Gegenfurtner"
   ],
@@ -16,7 +16,7 @@
   "presenter": "Karl Gegenfurtner",
   "organizer": "",
   "bio": "",
-  "abstract": "Lecture title and abstract to be announced. The time shown is an approximate placeholder and is yet to be confirmed by the organisers.",
+  "abstract": "Many of the central questions in color vision have been with us for more than a century: How precisely can we discriminate colors? How stable are surface colors under changing illumination? And how should brightness and luminance be related to perception? This long tradition has produced a remarkably solid framework of theories, measurements, and standards. Yet its very success can also create the impression that the central questions have largely been settled.\nIn this lecture I will argue that several classical problems in color vision remain surprisingly open. My current work revisits these questions using a new generation of experimental tools. Virtual reality allows color constancy to be studied in photorealistic scenes under nearly natural viewing conditions while maintaining full experimental control. Deep neural networks provide end-to-end models of vision that link color processing directly to tasks such as object recognition. Robust ranking paradigms enable large-scale online experiments to evaluate photometric standards and heterochromatic brightness. Finally, gamified tasks make it possible to measure color discrimination at unprecedented scale, helping to overcome the curse of dimensionality in color space.\nIt is an exciting time in vision research, when new techniques allow us to find new answers to very old questions.",
   "day": "Sunday",
   "date": "2026-08-23",
   "room": "Bournemouth International Centre",
@@ -31,7 +31,7 @@
   "talk_number": null,
   "time": "17:00",
   "time_tbc": true,
-  "title": "Spotlight in Vision Lecture",
+  "title": "Distinguishing imagination from reality in a generative brain",
   "authors": [
    "Nadine Dijkstra"
   ],
@@ -42,7 +42,7 @@
   "presenter": "Nadine Dijkstra",
   "organizer": "",
   "bio": "",
-  "abstract": "Lecture title and abstract to be announced. The time shown is an approximate placeholder and is yet to be confirmed by the organisers.",
+  "abstract": "Our perception of reality is generative: to resolve ambiguous sensory input, our brain predicts the most likely interpretation using an internal model built on past experiences. This same mechanism allows us to generate sensory signals in the absence of input, giving rise to mental imagery. Since perception and imagery rely on the same generative mechanism, how do we know at any given moment that what we are experiencing is real and not just imagined? I will present studies that aim to answer this question using psychophysics, neuroimaging and computational modelling. The results suggest that higher-order brain regions monitor the precision of sensory signals to infer whether they reflect reality or imagination. I end by discussing a novel research direction in which we will explore the interaction between reality inferences and our internal model of the world.",
   "day": "Tuesday",
   "date": "2026-08-25",
   "room": "Bournemouth International Centre",
@@ -57,7 +57,7 @@
   "talk_number": null,
   "time": "17:00",
   "time_tbc": true,
-  "title": "Rank Prize Lecture",
+  "title": "The Early Role of Vision in Multisensory Development",
   "authors": [
    "Monica Gori"
   ],
@@ -68,7 +68,7 @@
   "presenter": "Monica Gori",
   "organizer": "",
   "bio": "",
-  "abstract": "Lecture title and abstract to be announced. The time shown is an approximate placeholder and is yet to be confirmed by the organisers.",
+  "abstract": "Developmental processing relies heavily on vision, which serves as a key organizer for integrating information from other senses. Vision indeed helps to shape how auditory and tactile signals are interpreted, supporting the development of coherent spatial and body representations. When visual input is missing early in life, as in blind infants and children, these representations are often altered, leading to difficulties in multisensory integration. Understanding how vision guides early sensory interaction reveals its foundational role in building a unified perception of the world and informs the design of accessible technologies that translate visual information into sound, vibration, or movement.",
   "day": "Wednesday",
   "date": "2026-08-26",
   "room": "Bournemouth International Centre",

@@ -19,6 +19,7 @@ Output schema (matches the IMRF/VSS scheduler so the UI is shared):
   session_title, session_kind, session_start, session_end
 """
 
+import html as ihtml
 import json
 import os
 import re
@@ -33,6 +34,7 @@ OUT_PATH = os.path.join(ROOT, "assets", "ecvp-data.json")
 URLS = {
     "talks": "https://ecvp2026.uk/ECVP2026_TalksProgramme_FULL.html",
     "posters": "https://ecvp2026.uk/posters_programme.html",
+    "conference": "https://ecvp2026.uk/conference/index.html",
 }
 
 # ECVP 2026: Sunday Aug 23 -> Thursday Aug 27, Bournemouth, UK
@@ -290,6 +292,49 @@ def build_socials():
     return entries
 
 
+def html_to_text(s):
+    """Collapse an HTML fragment to readable plain text."""
+    s = re.sub(r"<br\s*/?>", "\n", s)
+    s = re.sub(r"</p>", "\n", s)
+    s = re.sub(r"<[^>]+>", " ", s)
+    s = ihtml.unescape(s)
+    s = re.sub(r"[ \t]+", " ", s)
+    s = re.sub(r"\n\s*\n+", "\n", s)
+    return s.strip()
+
+
+def extract_keynote_details(conf_html):
+    """Pull (summary, abstract) pairs from the conference page <details> dropdowns
+    that carry a keynote abstract."""
+    pairs = []
+    for block in re.findall(r"<details\b.*?</details>", conf_html, re.DOTALL):
+        m = re.search(r"<summary\b[^>]*>(.*?)</summary>", block, re.DOTALL)
+        if not m:
+            continue
+        summary = html_to_text(m.group(1))
+        if "Abstract" not in summary:
+            continue
+        body = re.sub(r"<summary\b.*?</summary>", "", block, flags=re.DOTALL)
+        body = re.sub(r"^<details[^>]*>", "", body)
+        body = re.sub(r"</details>\s*$", "", body)
+        pairs.append((summary, html_to_text(body)))
+    return pairs
+
+
+def find_keynote(pairs, speaker):
+    """Return (lecture_title, abstract) for a speaker from the extracted pairs."""
+    for summary, abstract in pairs:
+        if speaker in summary:
+            # Summary form: "<Series> – <Speaker> - <Lecture Title> – Abstract:"
+            title = re.split(r"Abstract\s*:?", summary)[0]
+            idx = title.find(speaker)
+            if idx != -1:
+                title = title[idx + len(speaker):]
+            title = title.strip(" -–—\n\t")
+            return title, abstract
+    return None, None
+
+
 def add_minutes(hhmm, minutes):
     """Return HH:MM offset from a HH:MM string by `minutes`."""
     h, m = (int(x) for x in hhmm.split(":"))
@@ -297,23 +342,30 @@ def add_minutes(hhmm, minutes):
     return f"{(total // 60) % 24:02d}:{total % 60:02d}"
 
 
-def build_keynotes():
+def build_keynotes(detail_pairs):
     entries = []
     for k in KEYNOTES:
+        lecture_title, abstract = find_keynote(detail_pairs, k["speaker"])
+        # Fall back to the series name / TBC note if the page hasn't published the
+        # title or abstract yet.
+        title = lecture_title or k["title"]
+        body = abstract or KEYNOTE_TBC_NOTE
+        if not lecture_title:
+            print(f"  NOTE: no published title/abstract found for {k['speaker']}; using placeholder")
         entries.append({
             "id": k["id"],
             "kind": "keynote",
             "talk_number": None,
             "time": k["time"],
             "time_tbc": True,
-            "title": k["title"],
+            "title": title,
             "authors": [k["speaker"]],
             "author_numbers": [""],
             "affiliations": k["affiliation"],
             "presenter": k["speaker"],
             "organizer": "",
             "bio": "",
-            "abstract": KEYNOTE_TBC_NOTE,
+            "abstract": body,
             "day": k["day"],
             "date": DAY_TO_DATE.get(k["day"], ""),
             "room": VENUE,
@@ -328,11 +380,13 @@ def build_keynotes():
 def main():
     talks_html = load_html("talks")
     posters_html = load_html("posters")
+    conf_html = load_html("conference")
 
     raw_talks = extract_json_array(talks_html, "talks")
     raw_posters = extract_json_array(posters_html, "posters")
+    keynote_details = extract_keynote_details(conf_html)
 
-    keynotes = build_keynotes()
+    keynotes = build_keynotes(keynote_details)
     socials = build_socials()
     talks = build_talks(raw_talks)
     posters = build_posters(raw_posters)
