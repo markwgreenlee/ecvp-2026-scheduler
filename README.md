@@ -156,11 +156,14 @@ ecvp-2026-scheduler/
 
 ### Data Schema
 
-Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters carry a topic as their session. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
+Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters have no room in the source, so they are assigned a board number `P{session}.{board}` (e.g. `P5.12`) — one of the seven poster sessions (morning + evening Mon–Wed, Thursday morning, matching the printed grid's "Poster 1"–"Poster 7") and a 1..n board within it — with the topic kept in the session label. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
 
 ---
 
 ## Version History
+
+**v1.1.1** (2026-06-29)
+- Added poster board numbers (the programme has none): each poster shows `P{session}.{board}` (e.g. P5.12), numbered 1..n within each of the seven poster sessions, displayed before the title like the IMRF/VSS schedulers
 
 **v1.1.0** (2026-06-29)
 - Added a **Social** category with four events (Opening Reception, Illusion Night, Conference Dinner, Farewell Party), exported to the calendar as full evening blocks

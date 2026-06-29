@@ -60,6 +60,9 @@ const SessionDetailModal = ({ session, isSelected, onToggle, onClose }) => {
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <Text style={styles.title}>
+            {session.kind === 'poster' && session.talk_number
+              ? <Text style={styles.posterId}>{session.id}{'  '}</Text>
+              : null}
             {session.title}
           </Text>
 

@@ -40,6 +40,9 @@ const SessionCard = ({ session, isSelected }) => {
       ) : null}
 
       <Text style={styles.title} numberOfLines={3}>
+        {session.kind === 'poster' && session.talk_number
+          ? <Text style={styles.posterId}>{session.id}{'  '}</Text>
+          : null}
         {session.title}
       </Text>
 

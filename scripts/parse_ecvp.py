@@ -159,9 +159,22 @@ def build_talks(raw_talks):
     return entries
 
 
+# The programme has no poster board numbers, so we assign them: each poster
+# session (the morning and evening blocks, Mon–Wed, plus Thursday morning) is
+# numbered 1..7 to match the printed grid's "Poster 1" … "Poster 7", and within
+# a session posters are numbered 1..n in programme order (which is grouped by
+# topic). A poster's id is "P{session}.{board}", e.g. P5.12, shown on the card.
+POSTER_SESSION_NUM = {
+    ("Monday", "AM"): 1, ("Monday", "PM"): 2,
+    ("Tuesday", "AM"): 3, ("Tuesday", "PM"): 4,
+    ("Wednesday", "AM"): 5, ("Wednesday", "PM"): 6,
+    ("Thursday", "AM"): 7,
+}
+
+
 def build_posters(raw_posters):
     entries = []
-    seen_ids = {}
+    board_counter = {}
     for p in raw_posters:
         author = clean(p.get("Author"))
         coauthors = split_coauthors(p.get("CoAuthors"))
@@ -175,16 +188,24 @@ def build_posters(raw_posters):
         start = parts[0].strip() if parts else ""
         end = parts[1].strip() if len(parts) > 1 else ""
 
-        sub = p.get("SubmissionID")
-        base_id = f"P{int(round(float(sub)))}" if sub not in (None, "") else None
-        if base_id is None or base_id in seen_ids:
-            base_id = f"P{len(entries) + 1:03d}-x"
-        seen_ids[base_id] = True
+        # Assign a poster-session number (1–7) and a 1..n board number within it.
+        block = "AM" if start and start < "12:00" else "PM"
+        snum = POSTER_SESSION_NUM.get((day, block))
+        if snum is not None:
+            board = board_counter.get(snum, 0) + 1
+            board_counter[snum] = board
+            poster_id = f"P{snum}.{board}"
+            poster_number = f"{snum}.{board}"
+            session_title = f"Poster Session {snum} · {topic}" if topic else f"Poster Session {snum}"
+        else:
+            poster_id = f"P{len(entries) + 1:03d}-x"
+            poster_number = None
+            session_title = topic
 
         entries.append({
-            "id": base_id,
+            "id": poster_id,
             "kind": "poster",
-            "talk_number": None,
+            "talk_number": poster_number,
             "time": start,
             "time_tbc": False,
             "title": clean(p.get("Title")) or TITLE_PLACEHOLDER,
@@ -198,11 +219,19 @@ def build_posters(raw_posters):
             "day": day,
             "date": DAY_TO_DATE.get(day, ""),
             "room": "",
-            "session_title": topic,
+            "session_title": session_title,
             "session_kind": "Poster Session",
             "session_start": start,
             "session_end": end,
         })
+
+    # Display posters in board order: session 1 boards 1..n, then session 2, …
+    def order(e):
+        if e["talk_number"]:
+            s, b = e["talk_number"].split(".")
+            return (int(s), int(b))
+        return (99, 0)
+    entries.sort(key=order)
     return entries
 
 

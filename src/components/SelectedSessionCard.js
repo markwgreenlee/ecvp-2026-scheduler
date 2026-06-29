@@ -8,6 +8,9 @@ const SelectedSessionCard = ({ session, onRemove }) => {
       <View style={styles.content}>
         <View>
           <Text style={styles.title} numberOfLines={2}>
+            {session.kind === 'poster' && session.talk_number
+              ? <Text style={styles.posterId}>{session.id}{'  '}</Text>
+              : null}
             {session.title}
           </Text>
           <View style={styles.details}>
