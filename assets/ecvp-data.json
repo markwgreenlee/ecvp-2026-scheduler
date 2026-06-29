@@ -4,7 +4,7 @@
   "kind": "keynote",
   "talk_number": null,
   "time": "18:00",
-  "time_tbc": true,
+  "time_tbc": false,
   "title": "Color Vision — Then and Now",
   "authors": [
    "Karl Gegenfurtner"
@@ -30,7 +30,7 @@
   "kind": "keynote",
   "talk_number": null,
   "time": "17:00",
-  "time_tbc": true,
+  "time_tbc": false,
   "title": "Distinguishing imagination from reality in a generative brain",
   "authors": [
    "Nadine Dijkstra"
@@ -56,7 +56,7 @@
   "kind": "keynote",
   "talk_number": null,
   "time": "17:00",
-  "time_tbc": true,
+  "time_tbc": false,
   "title": "The Early Role of Vision in Multisensory Development",
   "authors": [
    "Monica Gori"

@@ -357,7 +357,7 @@ def build_keynotes(detail_pairs):
             "kind": "keynote",
             "talk_number": None,
             "time": k["time"],
-            "time_tbc": True,
+            "time_tbc": False,
             "title": title,
             "authors": [k["speaker"]],
             "author_numbers": [""],
