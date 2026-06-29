@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ecvp-2026-v1.0.0';
+const CACHE_NAME = 'ecvp-2026-v1.1.0';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

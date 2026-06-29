@@ -53,7 +53,7 @@ Calendar events are anchored to British Summer Time (Bournemouth, `Europe/London
 
 Then close and reopen the Calendar app.
 
-> **Keynote times:** The three keynote lectures (Perception, Spotlight in Vision, Rank Prize) had no published times when this app was built. They are marked **(TBC)** and use approximate placeholder times — check the official programme for the confirmed times before relying on calendar entries for them.
+> **A few entries are incomplete in the source programme.** Six contributions (one talk, five posters) have no title published yet and show **[Title to be announced]**; two of those also lack an abstract. The corrected details are being requested from the organisers and will be added when available.
 
 ### Can't find presentations
 
@@ -98,7 +98,7 @@ npx expo start
 
 ### Regenerating the data
 
-The presentation dataset is parsed from the two official ECVP 2026 programme pages (talks and posters), which each embed their records as a JSON array, plus the three hand-entered keynotes:
+The presentation dataset is parsed from the three official ECVP 2026 pages — the talks programme and poster programme (each embeds its records as a JSON array) and the conference page (keynote lecture titles and abstracts, pulled from its dropdowns). Keynote speakers/affiliations/times and the four social events are entered by hand. Talks are grouped so each session (same day, session, and room) is listed contiguously and chronologically, with parallel sessions following one another:
 
 ```bash
 python3 scripts/parse_ecvp.py           # uses the saved copies in scripts/source_html/
@@ -156,11 +156,19 @@ ecvp-2026-scheduler/
 
 ### Data Schema
 
-Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters carry a topic as their session. `time_tbc` is `true` only for the three keynotes, whose times are approximate placeholders.
+Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters carry a topic as their session. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
 
 ---
 
 ## Version History
+
+**v1.1.0** (2026-06-29)
+- Added a **Social** category with four events (Opening Reception, Illusion Night, Conference Dinner, Farewell Party), exported to the calendar as full evening blocks
+- Keynotes now show their real **lecture titles and abstracts** (parsed from the conference page dropdowns) and confirmed durations — Perception 120 min, Spotlight in Vision & Rank Prize 90 min — exported as full-length events; the TBC time marker was removed
+- **Talks are grouped by session**: each (day, session, room) block is listed contiguously and chronologically, with parallel sessions following one another instead of interleaving slot by slot
+- Six contributions missing a title in the source programme now show **[Title to be announced]** (corrected details requested from the organisers)
+- GitHub Pages deploy workflow updated to Node 24 action versions
+- Added a printable QR-code flyer (`ECVP_2026_Scheduler_QR.pdf`) and generator script
 
 **v1.0.0** (2026-06-29)
 - Initial release for ECVP 2026 (Bournemouth, August 23–27)
