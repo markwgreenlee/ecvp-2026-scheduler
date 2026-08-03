@@ -53,21 +53,22 @@ Calendar events are anchored to British Summer Time (Bournemouth, `Europe/London
 
 Then close and reopen the Calendar app.
 
-> **A few entries are incomplete in the source programme.** Six contributions (one talk, five posters) have no title published yet and show **[Title to be announced]**; two of those also lack an abstract. The corrected details are being requested from the organisers and will be added when available.
+> **A couple of entries are still incomplete in the source programme.** Two contributions (one talk, one poster) have no abstract published yet; every presentation now has a title. The missing abstracts are being requested from the organisers and will be added when available.
 
 ### Can't find presentations
 
 - Try shorter search terms (e.g., "motion" instead of "motion perception")
 - Search by author last name (e.g., "Gegenfurtner", "Dijkstra")
 - Check that day and type filters are cleared
-- Refresh the page to verify all 618 presentations loaded
+- Refresh the page to verify all 622 presentations loaded
 
 ---
 
 ## Features
 
-- **618 presentations** from the official ECVP 2026 online programme — 3 keynotes, 10 symposia (46 symposium talks), 120 talk-session talks, 445 posters, and 4 social events
+- **622 presentations** from the official ECVP 2026 online programme — 3 keynotes, 10 symposia (45 symposium talks), 120 talk-session talks, 450 posters, and 4 social events
 - Full-text search by title, author, co-authors, abstract, session, and topic
+- **Author affiliations** for every talk and poster — authors shown with superscript numbers and a numbered institution list
 - Filter by day (Sun–Thu) and type (Keynote / Symposium / Talk / Poster / Social)
 - **Tap any card** to read the full abstract, authors, and session details in a pop-up sheet
 - Build a personal schedule — add/remove directly from the detail sheet
@@ -130,7 +131,7 @@ ecvp-2026-scheduler/
 ├── app.json                        # Expo / PWA configuration
 ├── assets/
 │   ├── icon.png                    # App icon (stylised eye)
-│   └── ecvp-data.json              # 618 presentations
+│   └── ecvp-data.json              # 622 presentations
 ├── public/
 │   ├── sw.js                       # Service worker (offline caching)
 │   └── icons/                      # PWA + apple-touch icons (192 / 512 / 180)
@@ -156,11 +157,16 @@ ecvp-2026-scheduler/
 
 ### Data Schema
 
-Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters have no room in the source, so they are assigned a board number `P{session}.{board}` (e.g. `P5.12`) — one of the seven poster sessions (morning + evening Mon–Wed, Thursday morning, matching the printed grid's "Poster 1"–"Poster 7") and a 1..n board within it — with the topic kept in the session label. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
+Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. For talks and posters, `authors[]` and its parallel `author_numbers[]` (superscript affiliation numbers, e.g. `"1"` or `"2,3,4"`) and the numbered `affiliations` block come from the organiser-supplied `Authors`/`Affiliations` fields in the source pages; keynotes and socials leave these as their hand-entered values. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters have no room in the source, so they are assigned a board number `P{session}.{board}` (e.g. `P5.12`) — one of the seven poster sessions (morning + evening Mon–Wed, Thursday morning, matching the printed grid's "Poster 1"–"Poster 7") and a 1..n board within it — with the topic kept in the session label. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
 
 ---
 
 ## Version History
+
+**v1.2.0** (2026-08-03)
+- **Author affiliations** added for every talk and poster, from an updated programme supplied by the organisers: each author now shows superscript affiliation number(s) with a numbered institution list in the detail sheet (matching the IMRF/VSS schedulers)
+- Programme refreshed to **622 presentations** (was 618): 45 symposium talks (was 46) and 450 posters (was 445)
+- Every presentation now has a published title — the previous six **[Title to be announced]** placeholders are resolved; two entries (one talk, one poster) still lack an abstract in the source
 
 **v1.1.2** (2026-06-29)
 - Poster board numbers now use the authors' blue, making them easier to tell apart from the title

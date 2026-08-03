@@ -97,6 +97,38 @@ def clean(value):
     return (str(value).strip() if value is not None else "")
 
 
+def build_author_fields(record):
+    """Build (authors, author_numbers, affiliations) from the organiser's
+    structured `Authors` / `Affiliations` fields.
+
+    `Authors` is a list of {"name", "aff": [1-indexed ints]} and `Affiliations`
+    is the matching 1-indexed list of affiliation strings. We render authors with
+    superscript numbers (e.g. author¹ ²) and the affiliations as a numbered block,
+    matching the IMRF/VSS schedulers. Returns (None, None, None) when the record
+    lacks the structured fields so callers can fall back to Speaker/CoAuthors.
+    """
+    author_objs = record.get("Authors")
+    if not isinstance(author_objs, list) or not author_objs:
+        return None, None, None
+
+    names, numbers = [], []
+    for a in author_objs:
+        name = clean(a.get("name"))
+        if not name:
+            continue
+        names.append(name)
+        aff = a.get("aff") or []
+        numbers.append(",".join(str(int(n)) for n in aff))
+    if not names:
+        return None, None, None
+
+    affs = record.get("Affiliations") or []
+    affiliations = "\n".join(
+        f"{i + 1}. {clean(a)}" for i, a in enumerate(affs) if clean(a)
+    )
+    return names, numbers, affiliations
+
+
 def build_talks(raw_talks):
     entries = []
     seen_ids = {}
@@ -104,10 +136,17 @@ def build_talks(raw_talks):
         session = clean(t.get("Session"))
         is_sym = session.lower().startswith("symposium")
         speaker = clean(t.get("Speaker"))
-        coauthors = split_coauthors(t.get("CoAuthors"))
-        authors = ([speaker] if speaker else []) + coauthors
         day = clean(t.get("Day"))
         time = clean(t.get("Time"))
+
+        # Prefer the organiser's structured Authors/Affiliations (superscript
+        # numbers); fall back to Speaker + CoAuthors for older source files.
+        authors, author_numbers, affiliations = build_author_fields(t)
+        if authors is None:
+            coauthors = split_coauthors(t.get("CoAuthors"))
+            authors = ([speaker] if speaker else []) + coauthors
+            author_numbers = ["" for _ in authors]
+            affiliations = ""
 
         sub = t.get("SubmissionID")
         base_id = f"T{int(round(float(sub)))}" if sub not in (None, "") else None
@@ -124,8 +163,8 @@ def build_talks(raw_talks):
             "time_tbc": False,
             "title": clean(t.get("Title")) or TITLE_PLACEHOLDER,
             "authors": authors,
-            "author_numbers": ["" for _ in authors],
-            "affiliations": "",
+            "author_numbers": author_numbers,
+            "affiliations": affiliations,
             "presenter": speaker,
             "organizer": "",
             "bio": "",
@@ -177,10 +216,17 @@ def build_posters(raw_posters):
     board_counter = {}
     for p in raw_posters:
         author = clean(p.get("Author"))
-        coauthors = split_coauthors(p.get("CoAuthors"))
-        authors = ([author] if author else []) + coauthors
         day = clean(p.get("Day"))
         topic = clean(p.get("Topic"))
+
+        # Prefer the organiser's structured Authors/Affiliations (superscript
+        # numbers); fall back to Author + CoAuthors for older source files.
+        authors, author_numbers, affiliations = build_author_fields(p)
+        if authors is None:
+            coauthors = split_coauthors(p.get("CoAuthors"))
+            authors = ([author] if author else []) + coauthors
+            author_numbers = ["" for _ in authors]
+            affiliations = ""
 
         # Time is the poster session block, e.g. "09:00–10:30"
         time_raw = clean(p.get("Time"))
@@ -210,8 +256,8 @@ def build_posters(raw_posters):
             "time_tbc": False,
             "title": clean(p.get("Title")) or TITLE_PLACEHOLDER,
             "authors": authors,
-            "author_numbers": ["" for _ in authors],
-            "affiliations": "",
+            "author_numbers": author_numbers,
+            "affiliations": affiliations,
             "presenter": author,
             "organizer": "",
             "bio": "",
