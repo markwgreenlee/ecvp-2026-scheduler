@@ -24,8 +24,23 @@ DATELINE = "August 23–27, 2026 · Bournemouth, UK"
 QR_PNG = ROOT / "ecvp-scheduler-qr.png"
 PDF_OUT = ROOT / "ECVP_2026_Scheduler_QR.pdf"
 
+DESCRIPTION = (
+    "Search and organise the entire ECVP 2026 programme on your phone. "
+    "Build a personal schedule and export it to your calendar — no app "
+    "store, no account, no sign-up."
+)
+
+FEATURES = [
+    "All 622 keynotes, symposia, talks, posters & socials — full-text search",
+    "Filter by day (Sun–Thu) and type",
+    "Tap any card for the full abstract, authors and affiliations",
+    "Build your own schedule and export it to Google Calendar",
+    "Works offline after the first load — add it to your home screen",
+]
+
 NAVY = (22 / 255, 50 / 255, 79 / 255)   # #16324f
 GREY = (0.42, 0.42, 0.42)
+DARK = (0.20, 0.20, 0.20)
 
 
 def make_qr():
@@ -37,50 +52,100 @@ def make_qr():
     print(f"wrote {QR_PNG.name} ({img.size[0]}x{img.size[1]})")
 
 
+def _wrap(c, text, font, size, max_width):
+    """Greedy word-wrap `text` to lines no wider than `max_width` points."""
+    words = text.split()
+    lines, line = [], ""
+    for word in words:
+        trial = f"{line} {word}".strip()
+        if c.stringWidth(trial, font, size) <= max_width:
+            line = trial
+        else:
+            if line:
+                lines.append(line)
+            line = word
+    if line:
+        lines.append(line)
+    return lines
+
+
 def make_pdf():
     c = canvas.Canvas(str(PDF_OUT), pagesize=A4)
     w, h = A4
+    y = h - 34 * mm
 
     # Title
     c.setFillColorRGB(*NAVY)
     c.setFont("Helvetica-Bold", 34)
-    c.drawCentredString(w / 2, h - 45 * mm, TITLE)
+    c.drawCentredString(w / 2, y, TITLE)
 
     # Subtitle + dateline
+    y -= 11 * mm
     c.setFillColorRGB(*GREY)
     c.setFont("Helvetica", 15)
-    c.drawCentredString(w / 2, h - 56 * mm, SUBTITLE)
+    c.drawCentredString(w / 2, y, SUBTITLE)
+    y -= 8 * mm
     c.setFont("Helvetica", 13)
-    c.drawCentredString(w / 2, h - 64 * mm, DATELINE)
+    c.drawCentredString(w / 2, y, DATELINE)
+
+    # Divider rule
+    y -= 8 * mm
+    c.setStrokeColorRGB(*NAVY)
+    c.setLineWidth(1)
+    c.line(w / 2 - 40 * mm, y, w / 2 + 40 * mm, y)
+
+    # Description (wrapped, centred)
+    y -= 11 * mm
+    c.setFillColorRGB(*DARK)
+    c.setFont("Helvetica", 12.5)
+    for line in _wrap(c, DESCRIPTION, "Helvetica", 12.5, 140 * mm):
+        c.drawCentredString(w / 2, y, line)
+        y -= 6.6 * mm
+
+    # Feature bullets (left-aligned within a centred column)
+    y -= 4 * mm
+    bullet_x = w / 2 - 68 * mm
+    text_x = bullet_x + 5 * mm
+    c.setFont("Helvetica", 11.5)
+    for feat in FEATURES:
+        c.setFillColorRGB(*NAVY)
+        c.drawString(bullet_x, y, "•")
+        c.setFillColorRGB(*DARK)
+        for i, line in enumerate(_wrap(c, feat, "Helvetica", 11.5, 128 * mm)):
+            c.drawString(text_x, y, line)
+            y -= 5.8 * mm
+        y -= 1.4 * mm
 
     # Prompt
+    y -= 4 * mm
     c.setFillColorRGB(*NAVY)
     c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(w / 2, h - 82 * mm, "Scan to open the schedule app")
+    c.drawCentredString(w / 2, y, "Scan to open the schedule app")
 
     # QR code (centred)
-    qr_size = 95 * mm
+    qr_size = 72 * mm
     qr_x = (w - qr_size) / 2
-    qr_y = h - 82 * mm - 12 * mm - qr_size
+    y -= 8 * mm
+    qr_y = y - qr_size
     c.drawImage(ImageReader(str(QR_PNG)), qr_x, qr_y, qr_size, qr_size,
                 preserveAspectRatio=True, mask="auto")
+    c.linkURL(URL, (qr_x, qr_y, qr_x + qr_size, qr_y + qr_size), relative=0)
 
     # Link
     c.setFillColorRGB(*NAVY)
     c.setFont("Helvetica-Bold", 14)
-    link_y = qr_y - 14 * mm
+    link_y = qr_y - 12 * mm
     c.drawCentredString(w / 2, link_y, URL)
-    c.linkURL(URL, (qr_x, qr_y, qr_x + qr_size, qr_y + qr_size), relative=0)
 
     # Footer note
     c.setFillColorRGB(*GREY)
     c.setFont("Helvetica-Oblique", 11)
     c.drawCentredString(
-        w / 2, link_y - 12 * mm,
+        w / 2, link_y - 10 * mm,
         "No app store needed — opens in any phone browser and works offline.",
     )
     c.drawCentredString(
-        w / 2, link_y - 18 * mm,
+        w / 2, link_y - 16 * mm,
         "On iPhone use Safari, on Android use Chrome, then 'Add to Home Screen'.",
     )
 

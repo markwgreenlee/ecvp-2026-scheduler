@@ -5,7 +5,8 @@ Building a Conference Schedule App with React Native, Expo, and AI
 
   The ECVP 2026 Schedule Organizer is a free, open-source mobile and web app built for the European Conference on Visual
   Perception (https://ecvp2026.uk/) annual meeting (August 23–27, 2026, Bournemouth, UK). It allows conference
-  attendees to search 618 presentations, build a personal schedule, and export sessions to Google or Apple Calendar.
+  attendees to search 622 presentations, build a personal schedule, and export sessions to Google Calendar (the
+  web app) or, in the native iOS build, directly to Apple Calendar.
   
   The app was built by a non-developer using AI-assisted coding. The full source code is available
    at https://github.com/markwgreenlee/ecvp-2026-scheduler and can be adapted for any scientific or technical conference that

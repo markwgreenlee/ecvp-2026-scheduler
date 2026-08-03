@@ -72,7 +72,7 @@ Then close and reopen the Calendar app.
 - Filter by day (Sun–Thu) and type (Keynote / Symposium / Talk / Poster / Social)
 - **Tap any card** to read the full abstract, authors, and session details in a pop-up sheet
 - Build a personal schedule — add/remove directly from the detail sheet
-- Export to **Google Calendar** (opens in browser) or **Apple Calendar** (adds events directly)
+- Export to **Google Calendar** (opens in browser); the native iOS build can also add events directly to **Apple Calendar**
 - Persistent schedule — survives app restarts
 - Works offline after first load
 
