@@ -106,7 +106,9 @@ python3 scripts/parse_ecvp.py           # uses the saved copies in scripts/sourc
 python3 scripts/parse_ecvp.py --fetch   # re-download the live programme pages first
 ```
 
-This writes `assets/ecvp-data.json` and prints per-type counts and a validation report (unique ids, every entry dated).
+This writes `assets/ecvp-data.json` and prints per-type counts and a validation report (unique ids, every entry dated, abstracts backfilled, none left truncated).
+
+The organisers' August 2026 app-export truncates every abstract at the first double-quote character (it emits a stray `\` and drops the rest), leaving 29 abstracts cut off mid-sentence and 2 empty. `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser uses it to backfill **only** abstracts the source has broken — so a future corrected export supersedes it automatically. Two entries (`T397`, `P2.35`) had no abstract in any version and remain blank pending the organisers.
 
 ### Regenerating the app icons
 
@@ -162,6 +164,9 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 ---
 
 ## Version History
+
+**v1.2.1** (2026-08-03)
+- **Restored 29 truncated abstracts.** The organisers' updated export cut every abstract off at the first double-quote character; the parser now backfills the full text from the previous complete dataset (`scripts/recovered_abstracts.json`), verified to match each abstract's opening. Only `T397` and `P2.35`, which never had an abstract, remain blank
 
 **v1.2.0** (2026-08-03)
 - **Author affiliations** added for every talk and poster, from an updated programme supplied by the organisers: each author now shows superscript affiliation number(s) with a numbered institution list in the detail sheet (matching the IMRF/VSS schedulers)

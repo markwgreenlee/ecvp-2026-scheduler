@@ -31,6 +31,14 @@ ROOT = os.path.dirname(HERE)
 SOURCE_DIR = os.path.join(HERE, "source_html")
 OUT_PATH = os.path.join(ROOT, "assets", "ecvp-data.json")
 
+# The organisers' 2026-08 export truncates every abstract at the first double-
+# quote character (it writes `\` and drops the remainder), and leaves two empty.
+# `recovered_abstracts.json` maps SubmissionID -> the full abstract, recovered
+# from the previous complete dataset, and is used only to backfill abstracts the
+# source has broken. A future corrected export supersedes it automatically (a
+# non-truncated abstract is never overwritten). See README "Data Source".
+RECOVERED_PATH = os.path.join(HERE, "recovered_abstracts.json")
+
 URLS = {
     "talks": "https://ecvp2026.uk/ECVP2026_TalksProgramme_FULL.html",
     "posters": "https://ecvp2026.uk/posters_programme.html",
@@ -97,6 +105,39 @@ def clean(value):
     return (str(value).strip() if value is not None else "")
 
 
+def load_recovered_abstracts():
+    """SubmissionID -> full abstract, for entries the source export truncated."""
+    if os.path.exists(RECOVERED_PATH):
+        with open(RECOVERED_PATH) as f:
+            return json.load(f)
+    return {}
+
+
+def _submission_keys(submission_id):
+    """Candidate string keys for a SubmissionID (int/float/str tolerant)."""
+    if submission_id in (None, ""):
+        return []
+    keys = [str(submission_id)]
+    try:
+        keys.append(str(int(round(float(submission_id)))))
+    except (TypeError, ValueError):
+        pass
+    return keys
+
+
+def resolve_abstract(raw_abstract, submission_id, recovered):
+    """Return the abstract, backfilling from `recovered` when the source value is
+    empty or truncated. Truncated abstracts end in a stray backslash because the
+    export cut them at the first double-quote character."""
+    a = clean(raw_abstract)
+    if a and not a.endswith("\\"):
+        return a
+    for key in _submission_keys(submission_id):
+        if key in recovered:
+            return recovered[key]
+    return a
+
+
 def build_author_fields(record):
     """Build (authors, author_numbers, affiliations) from the organiser's
     structured `Authors` / `Affiliations` fields.
@@ -129,7 +170,7 @@ def build_author_fields(record):
     return names, numbers, affiliations
 
 
-def build_talks(raw_talks):
+def build_talks(raw_talks, recovered):
     entries = []
     seen_ids = {}
     for t in raw_talks:
@@ -168,7 +209,7 @@ def build_talks(raw_talks):
             "presenter": speaker,
             "organizer": "",
             "bio": "",
-            "abstract": clean(t.get("Abstract")),
+            "abstract": resolve_abstract(t.get("Abstract"), sub, recovered),
             "day": day,
             "date": DAY_TO_DATE.get(day, ""),
             "room": clean(t.get("Room")),
@@ -211,7 +252,7 @@ POSTER_SESSION_NUM = {
 }
 
 
-def build_posters(raw_posters):
+def build_posters(raw_posters, recovered):
     entries = []
     board_counter = {}
     for p in raw_posters:
@@ -261,7 +302,7 @@ def build_posters(raw_posters):
             "presenter": author,
             "organizer": "",
             "bio": "",
-            "abstract": clean(p.get("Abstract")),
+            "abstract": resolve_abstract(p.get("Abstract"), p.get("SubmissionID"), recovered),
             "day": day,
             "date": DAY_TO_DATE.get(day, ""),
             "room": "",
@@ -482,11 +523,12 @@ def main():
     raw_talks = extract_json_array(talks_html, "talks")
     raw_posters = extract_json_array(posters_html, "posters")
     keynote_details = extract_keynote_details(conf_html)
+    recovered = load_recovered_abstracts()
 
     keynotes = build_keynotes(keynote_details)
     socials = build_socials()
-    talks = build_talks(raw_talks)
-    posters = build_posters(raw_posters)
+    talks = build_talks(raw_talks, recovered)
+    posters = build_posters(raw_posters, recovered)
 
     data = keynotes + socials + talks + posters
 
@@ -494,6 +536,9 @@ def main():
     ids = [d["id"] for d in data]
     dupes = [i for i, c in Counter(ids).items() if c > 1]
     missing_date = [d["id"] for d in data if not d["date"]]
+    contrib = [d for d in data if d["kind"] in ("talk", "symposium", "poster")]
+    truncated = [d["id"] for d in contrib if d["abstract"].endswith("\\")]
+    empty_abs = [d["id"] for d in contrib if not d["abstract"].strip()]
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w") as f:
@@ -513,6 +558,13 @@ def main():
         print(f"  WARNING entries with no date: {missing_date}")
     else:
         print("  all entries have a date ✓")
+    print(f"  abstracts backfilled from recovery file: {len(recovered)}")
+    if truncated:
+        print(f"  WARNING still-truncated abstracts: {truncated}")
+    else:
+        print("  no truncated abstracts ✓")
+    if empty_abs:
+        print(f"  abstracts still empty (none in source): {empty_abs}")
 
 
 if __name__ == "__main__":
