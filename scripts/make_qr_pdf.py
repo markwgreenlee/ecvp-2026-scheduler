@@ -7,6 +7,7 @@ Outputs (in the project root):
 
 Run from the project root:  python3 scripts/make_qr_pdf.py
 """
+import json
 from pathlib import Path
 
 import qrcode
@@ -30,8 +31,13 @@ DESCRIPTION = (
     "store, no account, no sign-up."
 )
 
+# Counted from the programme rather than hardcoded: the organisers' corrected
+# exports change the total (622 -> 614 on 2026-08-06), and a stale figure on a
+# flyer published by the conference is not something we can quietly fix later.
+ENTRY_COUNT = len(json.loads((ROOT / "assets" / "ecvp-data.json").read_text()))
+
 FEATURES = [
-    "All 622 keynotes, symposia, talks, posters & socials — full-text search",
+    f"All {ENTRY_COUNT} keynotes, symposia, talks, posters & socials — full-text search",
     "Filter by day (Sun–Thu) and type",
     "Tap any card for the full abstract, authors and affiliations",
     "Build your own schedule and export it to Google Calendar",
