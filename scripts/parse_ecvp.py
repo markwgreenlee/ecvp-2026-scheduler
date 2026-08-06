@@ -97,12 +97,23 @@ def split_coauthors(raw):
         name = re.sub(r"^(?:&|and)\s+", "", name, flags=re.IGNORECASE).strip()
         name = re.sub(r"^&\s*", "", name).strip()
         if name:
-            names.append(name)
+            names.append(clean_name(name))
     return names
 
 
 def clean(value):
     return (str(value).strip() if value is not None else "")
+
+
+def clean_name(value):
+    """Like `clean`, but also collapses whitespace *inside* a personal name.
+
+    A handful of source records carry a stray tab or a double space between the
+    given and family name (e.g. `Akihisa\tTakemura`, `Frederick  A.A. Kingdom`),
+    which renders oddly and breaks search on the full name. Abstracts keep their
+    internal whitespace, so this is deliberately separate from `clean`.
+    """
+    return re.sub(r"\s+", " ", clean(value))
 
 
 def load_recovered_abstracts():
@@ -154,7 +165,7 @@ def build_author_fields(record):
 
     names, numbers = [], []
     for a in author_objs:
-        name = clean(a.get("name"))
+        name = clean_name(a.get("name"))
         if not name:
             continue
         names.append(name)
@@ -176,7 +187,7 @@ def build_talks(raw_talks, recovered):
     for t in raw_talks:
         session = clean(t.get("Session"))
         is_sym = session.lower().startswith("symposium")
-        speaker = clean(t.get("Speaker"))
+        speaker = clean_name(t.get("Speaker"))
         day = clean(t.get("Day"))
         time = clean(t.get("Time"))
 
@@ -256,7 +267,7 @@ def build_posters(raw_posters, recovered):
     entries = []
     board_counter = {}
     for p in raw_posters:
-        author = clean(p.get("Author"))
+        author = clean_name(p.get("Author"))
         day = clean(p.get("Day"))
         topic = clean(p.get("Topic"))
 

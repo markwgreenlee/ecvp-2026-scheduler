@@ -60,13 +60,13 @@ Then close and reopen the Calendar app.
 - Try shorter search terms (e.g., "motion" instead of "motion perception")
 - Search by author last name (e.g., "Gegenfurtner", "Dijkstra")
 - Check that day and type filters are cleared
-- Refresh the page to verify all 622 presentations loaded
+- Refresh the page to verify all 614 presentations loaded
 
 ---
 
 ## Features
 
-- **622 presentations** from the official ECVP 2026 online programme — 3 keynotes, 10 symposia (45 symposium talks), 120 talk-session talks, 450 posters, and 4 social events
+- **614 presentations** from the official ECVP 2026 online programme — 3 keynotes, 10 symposia (45 symposium talks), 120 talk-session talks, 442 posters, and 4 social events
 - Full-text search by title, author, co-authors, abstract, session, and topic
 - **Author affiliations** for every talk and poster — authors shown with superscript numbers and a numbered institution list
 - Filter by day (Sun–Thu) and type (Keynote / Symposium / Talk / Poster / Social)
@@ -108,7 +108,7 @@ python3 scripts/parse_ecvp.py --fetch   # re-download the live programme pages f
 
 This writes `assets/ecvp-data.json` and prints per-type counts and a validation report (unique ids, every entry dated, abstracts backfilled, none left truncated).
 
-The organisers' August 2026 app-export truncates every abstract at the first double-quote character (it emits a stray `\` and drops the rest), leaving 29 abstracts cut off mid-sentence and 2 empty. `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser uses it to backfill **only** abstracts the source has broken — so a future corrected export supersedes it automatically. Two entries (`T397`, `P2.35`) had no abstract in any version and remain blank pending the organisers.
+The organisers' August 2026 app-export truncates abstracts at the first double-quote character (it emits a stray `\` and drops the rest), leaving 27 abstracts cut off mid-sentence and 2 empty; the organisers' corrected 2026-08-06 export still carries this bug. `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser uses it to backfill **only** abstracts the source has broken — so a future corrected export supersedes it automatically. Two entries (`T397`, `P2.36`) had no abstract in any version and remain blank pending the organisers.
 
 ### Regenerating the app icons
 
@@ -133,7 +133,7 @@ ecvp-2026-scheduler/
 ├── app.json                        # Expo / PWA configuration
 ├── assets/
 │   ├── icon.png                    # App icon (stylised eye)
-│   └── ecvp-data.json              # 622 presentations
+│   └── ecvp-data.json              # 614 presentations
 ├── public/
 │   ├── sw.js                       # Service worker (offline caching)
 │   └── icons/                      # PWA + apple-touch icons (192 / 512 / 180)
@@ -164,6 +164,14 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 ---
 
 ## Version History
+
+**v1.2.2** (2026-08-06)
+- **Corrected programme from the organisers.** Eight posters that the previous export listed twice (Monday evening *and* Thursday morning) now appear once, on Monday evening; one poster (*VisionBridge*) moved from Thursday morning to Monday evening. The programme is now **614 presentations** (was 622), with **442 posters** (was 450)
+- Two entries had another submission's abstract attached and are now correct: the talk *Stress and visual illusions: Is there a relationship?* and the poster *Pre-microsaccade enhancement of the current and future foveal input*
+- One poster title shortened to the submitted version (*Mind the Affective Gap: Human vs. Machine Perception of Emotion in Biological Motion*), one affiliation corrected (University of Cambridge now carries its country code), and three abstracts regained their paragraph breaks
+- Poster board numbers shift accordingly, since they are numbered 1..n in programme order within each session — the two abstract-less entries are now `T397` and `P2.36` (`P2.35` before this refresh)
+- The corrected export still truncates 27 abstracts at the first double-quote character, so `scripts/recovered_abstracts.json` is still applied
+- **Author names are now whitespace-normalised.** Seven source records carried a stray tab or double space inside a name (`Akihisa\tTakemura`, `Frederick  A.A. Kingdom`, …), which rendered oddly and stopped the full name matching in search; the parser now collapses whitespace inside names, while abstracts keep their paragraph breaks
 
 **v1.2.1** (2026-08-03)
 - **Restored 29 truncated abstracts.** The organisers' updated export cut every abstract off at the first double-quote character; the parser now backfills the full text from the previous complete dataset (`scripts/recovered_abstracts.json`), verified to match each abstract's opening. Only `T397` and `P2.35`, which never had an abstract, remain blank
