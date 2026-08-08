@@ -130,6 +130,18 @@ eas build --platform android   # produces .apk / .aab — requires free Expo acc
 eas build --platform ios       # produces .ipa — requires Apple Developer account ($99/yr)
 ```
 
+### Analytics (optional)
+
+Visitor numbers come from [Umami Cloud](https://cloud.umami.is). Register the site there with the domain **`markwgreenlee.github.io`** — a bare hostname, no scheme and no path — then set the site id as a repository variable:
+
+```bash
+gh variable set UMAMI_WEBSITE_ID --body "<the id Umami gives you>"
+```
+
+The deploy workflow injects the tracking tag into `dist/index.html` on every run, because Expo rewrites that file on each export. If the variable is unset the tag is simply left out and the run logs a warning — the site still deploys normally, but the Umami dashboard will record nothing.
+
+This counts page views, not installs: someone who adds the app to their home screen looks the same as someone who only glances at it, and once installed the service worker may serve them from cache without a fresh page view. Treat it as a measure of reach rather than of downloads.
+
 ### Project Structure
 
 ```
