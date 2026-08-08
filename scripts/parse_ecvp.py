@@ -210,6 +210,13 @@ def _submission_keys(submission_id):
     return keys
 
 
+# Ids whose abstract was actually taken from the recovery file on this run. The
+# recovery file deliberately holds more entries than are needed (it is also a
+# safety net if a future export regresses), so reporting its size would overstate
+# how much of the programme is not coming straight from the organisers.
+BACKFILLED = []
+
+
 def resolve_abstract(raw_abstract, submission_id, recovered):
     """Return the abstract, backfilling from `recovered` when the source value is
     empty or truncated. Truncated abstracts end in a stray backslash because the
@@ -219,6 +226,7 @@ def resolve_abstract(raw_abstract, submission_id, recovered):
         return a
     for key in _submission_keys(submission_id):
         if key in recovered:
+            BACKFILLED.append(str(submission_id))
             return recovered[key]
     return a
 
@@ -347,20 +355,9 @@ POSTER_CODE_DAY = {
 }
 
 
-# STOPGAP, remove once the organisers re-export. Exactly one poster kept its old
-# numeric SubmissionID: its title contains unescaped quotes (`What Does "Curvy"
-# Mean to You?`), which breaks the export badly enough that the organisers' own
-# renumbering skipped it. The slot is not a guess -- Tuesday morning, "Scene and
-# Object Perception and Recognition" is line 5, and 5 is the one number missing
-# from that line's otherwise complete 1..10 sequence.
-POSTER_CODE_OVERRIDE = {"76": "T5AM5"}
-
-
 def parse_poster_code(code):
     """Split an organiser board code into (day, line, block, n), or None."""
-    code = clean(code)
-    code = POSTER_CODE_OVERRIDE.get(code, code)
-    m = POSTER_CODE_RE.match(code)
+    m = POSTER_CODE_RE.match(clean(code))
     if not m:
         return None
     return POSTER_CODE_DAY[m.group(1)], int(m.group(2)), m.group(3), int(m.group(4))
@@ -398,7 +395,6 @@ def build_posters(raw_posters, recovered):
 
         # Prefer the organiser's board code; it is what is printed on the board.
         code = clean(p.get("SubmissionID"))
-        code = POSTER_CODE_OVERRIDE.get(code, code)
         parsed = parse_poster_code(code)
         if parsed:
             code_day, line, code_block, seq = parsed
@@ -688,7 +684,9 @@ def main():
         print(f"  WARNING entries with no date: {missing_date}")
     else:
         print("  all entries have a date ✓")
-    print(f"  abstracts backfilled from recovery file: {len(recovered)}")
+    print(f"  abstracts backfilled from recovery file: {len(BACKFILLED)}"
+          f" of {len(recovered)} available"
+          + (f" -> {sorted(set(BACKFILLED))}" if BACKFILLED else ""))
     if truncated:
         print(f"  WARNING still-truncated abstracts: {truncated}")
     else:

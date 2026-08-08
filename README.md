@@ -53,7 +53,7 @@ Calendar events are anchored to British Summer Time (Bournemouth, `Europe/London
 
 Then close and reopen the Calendar app.
 
-> **A couple of entries are still incomplete in the source programme.** Two contributions (one talk, one poster) have no abstract published yet; every presentation now has a title. The missing abstracts are being requested from the organisers and will be added when available.
+> **The programme is now complete.** Every one of the 614 presentations has a title and an abstract, following the organisers' 2026-08-08 corrections.
 
 ### Can't find presentations
 
@@ -108,12 +108,14 @@ python3 scripts/parse_ecvp.py --fetch   # re-download the live programme pages f
 
 This writes `assets/ecvp-data.json` and prints per-type counts and a validation report (unique ids, every entry dated, abstracts backfilled, none left truncated).
 
-The organisers' August 2026 app-export mishandles double quotes the authors typed. In an **abstract** it truncates at the first `"` (emitting a stray `\` and dropping the rest), leaving 27 abstracts cut off mid-sentence; in a **title** it writes the quotes unescaped, which breaks the JSON outright. The 2026-08-08 export still carries both bugs.
+The organisers' app-export mishandles double quotes the authors typed. In an **abstract** it truncates at the first `"` (emitting a stray `\` and dropping the rest); in a **title** it writes them unescaped, which breaks the JSON outright.
 
-- `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser backfills **only** abstracts the source has broken, so a corrected export supersedes it automatically. It is keyed by both the old numeric ids and the new board codes, so either export works.
-- `escape_stray_quotes()` in the parser repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter (tracking keys separately from values), and reports how many it fixed.
+As of the **2026-08-08** export the organisers work around this by substituting typographic single quotes (`'…'`) for the offending double quotes. They applied that to the **posters** file, which is now clean, but **not** to the **talks** file, where 7 abstracts are still truncated. Those 7 are the only entries not coming straight from the source.
 
-Two entries (`T397`, `M2PM12`) have no abstract in any version and remain blank pending the organisers. One poster (`T5AM5`, "What Does "Curvy" Mean to You?") kept its old numeric id in the 2026-08-08 export because its quoted title also defeated the organisers' own renumbering; `POSTER_CODE_OVERRIDE` maps it until they re-export.
+- `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text). The parser backfills **only** abstracts the source has broken, so a corrected export supersedes it automatically, and the validation report prints how many were actually used versus how many are available. It is keyed by both the old numeric ids and the board codes, so either export works, and it is deliberately kept larger than currently needed as a safety net if an export regresses.
+- `escape_stray_quotes()` repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter (tracking keys separately from values), and reports how many it fixed. No longer triggered by the current export, but retained for the same reason.
+
+Every one of the 614 entries now has a title and an abstract. One residual cosmetic point: 7 poster abstracts lost their paragraph breaks in the 2026-08-08 export (the organisers' text is treated as authoritative, so these are not patched back).
 
 ### Regenerating the app icons
 
@@ -196,6 +198,14 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 ---
 
 ## Version History
+
+**v1.3.1** (2026-08-08)
+- **Every presentation now has an abstract.** The organisers supplied the two that had been missing throughout — `T397` (*Continuous Psychophysics in the Clinic*) and `M2PM12` (*Illusion of absence*)
+- **The poster export is clean at source.** The organisers replaced the double quotes that had been truncating abstracts with typographic single quotes, so all 442 poster abstracts now come straight from the programme instead of being backfilled; 7 talk abstracts still need the recovery file, as the same fix was not applied to the talks export
+- `T5AM5` now carries a real board code, so the `POSTER_CODE_OVERRIDE` stopgap is removed
+- One title changed with the quote substitution: *What Does 'Curvy' Mean to You?* (was `"Curvy"`)
+- The validation report now prints how many abstracts were **actually** backfilled rather than how many the recovery file holds
+- No presentation was added, removed, renumbered or rescheduled in this refresh
 
 **v1.3.0** (2026-08-08)
 - **Posters now use the organisers' board codes.** A poster is identified by the code printed on its board — `<day><line><AM|PM><n>`, e.g. `M1AM8` is the 8th poster in line 1 on Monday morning — replacing the running `P{session}.{board}` number the app used to assign. The boards are arranged as seven lines with one topic per line per session, so the code names the line to walk to, which the old number did not
