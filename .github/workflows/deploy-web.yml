@@ -28,9 +28,15 @@ jobs:
       - run: npm install
       - run: npx expo export -p web
       - run: sed -i 's|src="/_expo/|src="/ecvp-2026-scheduler/_expo/|g' dist/index.html
-      - name: Patch index.html for Safari PWA icon and name
+      - name: Patch index.html for Safari PWA icon, name and analytics
+        env:
+          # Repository variable, not a secret: the Umami site id is public by
+          # design (it ships in the page source). Unset -> no analytics tag.
+          UMAMI_WEBSITE_ID: ${{ vars.UMAMI_WEBSITE_ID }}
         run: |
           python3 - <<'PYEOF'
+          import os
+
           with open('dist/index.html', 'r') as f:
               html = f.read()
           tags = (
@@ -40,10 +46,29 @@ jobs:
               '    <meta name="apple-mobile-web-app-title" content="ECVP 2026">\n'
               '    <meta name="apple-mobile-web-app-status-bar-style" content="default">\n'
           )
+
+          # Expo rewrites dist/index.html on every export, so the analytics tag
+          # has to be re-injected here rather than kept in a source file.
+          website_id = os.environ.get('UMAMI_WEBSITE_ID', '').strip()
+          if website_id:
+              tags += (
+                  '    <script defer src="https://cloud.umami.is/script.js" '
+                  f'data-website-id="{website_id}"></script>\n'
+              )
+
           html = html.replace('</head>', tags + '</head>')
           with open('dist/index.html', 'w') as f:
               f.write(html)
+
           print('Safari PWA tags injected')
+          if website_id:
+              print(f'Umami analytics injected (site {website_id})')
+          else:
+              # Loud on purpose: a silently-skipped injection is exactly how the
+              # web app manifest went missing unnoticed for months.
+              print('::warning::UMAMI_WEBSITE_ID is not set - no analytics tag '
+                    'was injected, so the Umami dashboard will record nothing. '
+                    'Set it with: gh variable set UMAMI_WEBSITE_ID --body "<id>"')
           PYEOF
       - name: Generate PWA manifest
         run: python3 scripts/make_manifest.py
