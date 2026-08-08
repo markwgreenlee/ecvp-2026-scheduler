@@ -142,6 +142,21 @@ The deploy workflow injects the tracking tag into `dist/index.html` on every run
 
 This counts page views, not installs: someone who adds the app to their home screen looks the same as someone who only glances at it, and once installed the service worker may serve them from cache without a fresh page view. Treat it as a measure of reach rather than of downloads.
 
+### Security
+
+The site is static: no server, no database, no login, and the programme data is compiled into the JS bundle rather than served as a fetchable file. There is therefore nothing to tamper with at runtime — the only realistic risk is someone gaining push access to this repository, since the deploy workflow publishes whatever is on `main`.
+
+Measures in place:
+
+- **Actions pinned to commit SHAs**, not tags. A tag can be moved to point at new code, so `@v5` would silently run whatever upstream publishes next. Update deliberately: resolve the tag to a SHA (`gh api repos/actions/checkout/git/refs/tags/v5`) and edit the pin.
+- **A ruleset on `main`** blocking force-pushes and branch deletion, so history cannot be quietly rewritten.
+- **A Content-Security-Policy** injected into `index.html`, restricting scripts to this origin plus `cloud.umami.is`. Note `frame-ancestors` is absent — it is ignored in a `<meta>` tag, and GitHub Pages cannot set response headers.
+- **Default workflow permissions are read-only**, so a compromised action cannot push to the repo.
+
+Not covered here, and worth keeping current: two-factor authentication on the GitHub account, and periodically reviewing authorised OAuth apps and personal access tokens. Account takeover is the whole threat model.
+
+If the site is ever defaced, recovery is fast: revert the offending commit and re-run the deploy — the entire site is regenerable from this repository.
+
 ### Project Structure
 
 ```
