@@ -4,6 +4,30 @@ import ecvpData from '../../assets/ecvp-data.json';
 
 export const DataContext = createContext();
 
+// Saved schedules hold whole session objects, so they keep whatever the
+// programme said on the day they were saved. Re-resolve each one against the
+// current data: by id, else by title + day, which survives the poster board
+// renumbering (P1.58 -> M1AM8) and picks up corrected abstracts and times.
+// Anything that no longer exists in the programme is dropped.
+const reconcileSaved = (saved, sessions) => {
+  const byId = new Map(sessions.map(s => [s.id, s]));
+  const byTitle = new Map(
+    sessions.map(s => [`${s.day}|${(s.title || '').toLowerCase()}`, s])
+  );
+  const seen = new Set();
+  const out = [];
+  for (const item of saved) {
+    const match =
+      byId.get(item.id) ||
+      byTitle.get(`${item.day}|${(item.title || '').toLowerCase()}`);
+    if (match && !seen.has(match.id)) {
+      seen.add(match.id);
+      out.push(match);
+    }
+  }
+  return out;
+};
+
 export const DataProvider = ({ children }) => {
   const [allSessions, setAllSessions] = useState([]);
   const [selectedSessions, setSelectedSessions] = useState([]);
@@ -19,7 +43,7 @@ export const DataProvider = ({ children }) => {
         // Load previously selected sessions
         const saved = await AsyncStorage.getItem('selectedSessions');
         if (saved) {
-          setSelectedSessions(JSON.parse(saved));
+          setSelectedSessions(reconcileSaved(JSON.parse(saved), ecvpData));
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -61,6 +85,8 @@ export const DataProvider = ({ children }) => {
     if (query.trim()) {
       const lowerQuery = query.toLowerCase();
       results = results.filter(s =>
+        // Board code / talk number, so "M1AM8" finds that poster directly.
+        s.id.toLowerCase().includes(lowerQuery) ||
         s.title.toLowerCase().includes(lowerQuery) ||
         s.authors.join(' ').toLowerCase().includes(lowerQuery) ||
         s.abstract.toLowerCase().includes(lowerQuery) ||
