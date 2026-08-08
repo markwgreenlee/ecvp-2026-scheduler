@@ -21,14 +21,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
+      # Actions are pinned to commit SHAs, not tags: a tag can be moved to point
+      # at new code, so `@v5` would silently run whatever upstream publishes
+      # next. The trailing comment records the human-readable version.
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
       - run: npm install
       - run: npx expo export -p web
       - run: sed -i 's|src="/_expo/|src="/ecvp-2026-scheduler/_expo/|g' dist/index.html
-      - name: Patch index.html for Safari PWA icon, name and analytics
+      - name: Patch index.html for Safari PWA icon, name, analytics and CSP
         env:
           # Repository variable, not a secret: the Umami site id is public by
           # design (it ships in the page source). Unset -> no analytics tag.
@@ -57,10 +60,43 @@ jobs:
               )
 
           html = html.replace('</head>', tags + '</head>')
+
+          # Content-Security-Policy. The site is static, so the only script
+          # sources are our own bundle and the Umami tracker; locking that down
+          # limits what an injected or compromised script could do.
+          #   style 'unsafe-inline' - react-native-web injects styles at runtime
+          #   img blob:/data:       - canvas and inline icons
+          #   no 'unsafe-eval'      - verified the bundle's two eval() sites are
+          #                           unreachable in a browser
+          # frame-ancestors is deliberately absent: it is ignored in a <meta>
+          # tag and GitHub Pages cannot set response headers.
+          csp = (
+              "default-src 'self'; "
+              "base-uri 'self'; "
+              "object-src 'none'; "
+              "script-src 'self' https://cloud.umami.is; "
+              "connect-src 'self' https://cloud.umami.is; "
+              "style-src 'self' 'unsafe-inline'; "
+              "img-src 'self' data: blob:; "
+              "font-src 'self' data:; "
+              "manifest-src 'self'; "
+              "form-action 'self'"
+          )
+          # A <meta> policy only governs what follows it, so it must come first
+          # in <head> -- before the analytics tag and the bundle.
+          html = html.replace(
+              '<head>',
+              f'<head>\n    <meta http-equiv="Content-Security-Policy" content="{csp}">',
+              1,
+          )
+          if 'Content-Security-Policy' not in html:
+              raise SystemExit('CSP injection failed: no <head> in dist/index.html')
+
           with open('dist/index.html', 'w') as f:
               f.write(html)
 
           print('Safari PWA tags injected')
+          print('Content-Security-Policy injected')
           if website_id:
               print(f'Umami analytics injected (site {website_id})')
           else:
@@ -73,13 +109,13 @@ jobs:
       - name: Generate PWA manifest
         run: python3 scripts/make_manifest.py
       - name: Build Jekyll docs
-        uses: actions/jekyll-build-pages@v1
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
           source: ./docs
           destination: ./dist/docs
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: dist
-      - uses: actions/deploy-pages@v5
+      - uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
         id: deployment
