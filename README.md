@@ -108,7 +108,12 @@ python3 scripts/parse_ecvp.py --fetch   # re-download the live programme pages f
 
 This writes `assets/ecvp-data.json` and prints per-type counts and a validation report (unique ids, every entry dated, abstracts backfilled, none left truncated).
 
-The organisers' August 2026 app-export truncates abstracts at the first double-quote character (it emits a stray `\` and drops the rest), leaving 27 abstracts cut off mid-sentence and 2 empty; the organisers' corrected 2026-08-06 export still carries this bug. `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser uses it to backfill **only** abstracts the source has broken — so a future corrected export supersedes it automatically. Two entries (`T397`, `P2.36`) had no abstract in any version and remain blank pending the organisers.
+The organisers' August 2026 app-export mishandles double quotes the authors typed. In an **abstract** it truncates at the first `"` (emitting a stray `\` and dropping the rest), leaving 27 abstracts cut off mid-sentence; in a **title** it writes the quotes unescaped, which breaks the JSON outright. The 2026-08-08 export still carries both bugs.
+
+- `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text) and the parser backfills **only** abstracts the source has broken, so a corrected export supersedes it automatically. It is keyed by both the old numeric ids and the new board codes, so either export works.
+- `escape_stray_quotes()` in the parser repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter (tracking keys separately from values), and reports how many it fixed.
+
+Two entries (`T397`, `M2PM12`) have no abstract in any version and remain blank pending the organisers. One poster (`T5AM5`, "What Does "Curvy" Mean to You?") kept its old numeric id in the 2026-08-08 export because its quoted title also defeated the organisers' own renumbering; `POSTER_CODE_OVERRIDE` maps it until they re-export.
 
 ### Regenerating the app icons
 
@@ -159,11 +164,18 @@ ecvp-2026-scheduler/
 
 ### Data Schema
 
-Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. For talks and posters, `authors[]` and its parallel `author_numbers[]` (superscript affiliation numbers, e.g. `"1"` or `"2,3,4"`) and the numbered `affiliations` block come from the organiser-supplied `Authors`/`Affiliations` fields in the source pages; keynotes and socials leave these as their hand-entered values. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters have no room in the source, so they are assigned a board number `P{session}.{board}` (e.g. `P5.12`) — one of the seven poster sessions (morning + evening Mon–Wed, Thursday morning, matching the printed grid's "Poster 1"–"Poster 7") and a 1..n board within it — with the topic kept in the session label. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
+Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium` / `talk` / `poster` / `social`), `title`, `authors[]`, `author_numbers[]`, `affiliations`, `presenter`, `organizer`, `bio`, `abstract`, `day`, `date`, `room`, `session_title`, `session_kind`, `session_start`, `session_end`, `talk_number`, `time`, `time_tbc`. For talks and posters, `authors[]` and its parallel `author_numbers[]` (superscript affiliation numbers, e.g. `"1"` or `"2,3,4"`) and the numbered `affiliations` block come from the organiser-supplied `Authors`/`Affiliations` fields in the source pages; keynotes and socials leave these as their hand-entered values. Talks/symposia carry a room (Tregonwell Hall, Bayview Suite, Purbeck Lounge); posters carry the organisers' board code as their `id` and `talk_number` (e.g. `M1AM8`), taken from the export's `SubmissionID` — `<day><line><AM|PM><n>`, where the boards are laid out as seven lines with one topic per line per session and `n` restarts at 1 on each line, so `M1AM8` is the 8th poster in line 1 on Monday morning. This is the code printed on the board, and it is searchable, so typing a code jumps straight to that poster. The topic is kept in the session label. Older exports carried no board code; for those the parser falls back to the running `P{session}.{board}` number it used to assign. Keynote and social entries carry a full `session_end` so they export to the calendar as full-length events (Perception keynote 120 min, the other keynotes 90 min, talks 15 min). `time_tbc` is retained for future use and is currently `false` for all entries.
 
 ---
 
 ## Version History
+
+**v1.3.0** (2026-08-08)
+- **Posters now use the organisers' board codes.** A poster is identified by the code printed on its board — `<day><line><AM|PM><n>`, e.g. `M1AM8` is the 8th poster in line 1 on Monday morning — replacing the running `P{session}.{board}` number the app used to assign. The boards are arranged as seven lines with one topic per line per session, so the code names the line to walk to, which the old number did not
+- **Board codes are searchable**: typing `M1AM8` goes straight to that poster
+- Posters are listed in walking order: session, then line, then position along the line
+- **Saved schedules survive the renumbering.** Selections are re-resolved against the current programme on load (by id, then by title and day), so a poster saved as `P1.58` becomes `M1AM8` and also picks up any corrected abstract or time; entries no longer in the programme are dropped
+- The parser now repairs unescaped double quotes in the export instead of failing on them (one poster title, *What Does "Curvy" Mean to You?*, breaks the source JSON outright)
 
 **v1.2.2** (2026-08-06)
 - **Corrected programme from the organisers.** Eight posters that the previous export listed twice (Monday evening *and* Thursday morning) now appear once, on Monday evening; one poster (*VisionBridge*) moved from Thursday morning to Monday evening. The programme is now **614 presentations** (was 622), with **442 posters** (was 450)

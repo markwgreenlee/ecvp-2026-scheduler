@@ -78,13 +78,87 @@ def load_html(name):
     return html
 
 
+# A value's closing quote is always followed by `}`/`]`, or by a comma that
+# introduces the next key (`, "Foo":`) or the next element of an array. Anything
+# else is a quote the author typed, which the export failed to escape.
+_IN_OBJECT_END = re.compile(r'"\s*(?:[}\]]|,\s*"[A-Za-z_][A-Za-z0-9_]*"\s*:)')
+_IN_ARRAY_END = re.compile(r'"\s*[,\]]')
+
+
+def escape_stray_quotes(text):
+    """Escape double quotes that appear *inside* exported string values.
+
+    The organisers' export does not escape quotes the authors typed, so a title
+    like `What Does "Curvy" Mean to You?` terminates its JSON string early and
+    breaks the whole file. Rather than hand-patch each one, walk the text and
+    escape every quote that is not a real delimiter.
+
+    Keys are tracked separately from values: a key never contains a stray quote,
+    so it always closes on its first quote, while a value only closes where one
+    of the patterns above matches.
+
+    Returns (repaired_text, number_of_quotes_escaped).
+    """
+    out = []
+    i, n = 0, len(text)
+    stack = []            # nesting of '{' and '[' containers
+    in_string = False
+    is_key = False
+    expect_key = False    # next string starts a key rather than a value
+    fixed = 0
+
+    while i < n:
+        ch = text[i]
+
+        if in_string:
+            if ch == "\\":                      # keep existing escapes intact
+                out.append(text[i:i + 2])
+                i += 2
+                continue
+            if ch == '"':
+                end = _IN_ARRAY_END if (stack and stack[-1] == "[") else _IN_OBJECT_END
+                if is_key or end.match(text, i):
+                    in_string = False
+                else:                           # a quote the author typed
+                    out.append('\\"')
+                    fixed += 1
+                    i += 1
+                    continue
+        else:
+            if ch == '"':
+                in_string = True
+                is_key = expect_key
+            elif ch in "{[":
+                stack.append(ch)
+                expect_key = ch == "{"
+            elif ch in "}]":
+                if stack:
+                    stack.pop()
+            elif ch == ",":
+                expect_key = bool(stack) and stack[-1] == "{"
+            elif ch == ":":
+                expect_key = False
+
+        out.append(ch)
+        i += 1
+
+    return "".join(out), fixed
+
+
 def extract_json_array(html, var_name):
     """Pull `const <var>=[...]` out of a <script> block."""
     m = re.search(rf"const\s+{var_name}\s*=\s*(\[.*?\]);", html, re.DOTALL)
     if not m:
         raise ValueError(f"Could not find `const {var_name}=[...]` in HTML")
+    raw = m.group(1)
     # The poster abstracts contain literal newlines inside strings, so be lenient.
-    return json.loads(m.group(1), strict=False)
+    try:
+        return json.loads(raw, strict=False)
+    except json.JSONDecodeError:
+        repaired, fixed = escape_stray_quotes(raw)
+        data = json.loads(repaired, strict=False)
+        print(f"  NOTE: repaired {fixed} unescaped quote(s) in the {var_name} export")
+        return data
 
 
 def split_coauthors(raw):
@@ -250,17 +324,46 @@ def build_talks(raw_talks, recovered):
     return entries
 
 
-# The programme has no poster board numbers, so we assign them: each poster
-# session (the morning and evening blocks, Mon–Wed, plus Thursday morning) is
-# numbered 1..7 to match the printed grid's "Poster 1" … "Poster 7", and within
-# a session posters are numbered 1..n in programme order (which is grouped by
-# topic). A poster's id is "P{session}.{board}", e.g. P5.12, shown on the card.
+# Poster sessions: the morning and afternoon blocks Mon–Wed, plus Thursday
+# morning, numbered 1..7 to match the printed grid's "Poster 1" … "Poster 7".
 POSTER_SESSION_NUM = {
     ("Monday", "AM"): 1, ("Monday", "PM"): 2,
     ("Tuesday", "AM"): 3, ("Tuesday", "PM"): 4,
     ("Wednesday", "AM"): 5, ("Wednesday", "PM"): 6,
     ("Thursday", "AM"): 7,
 }
+
+# From 2026-08-08 the organisers carry their own board code in SubmissionID, and
+# it is what will be printed on the boards: <day><line><AM|PM><n>, e.g. M1AM8 is
+# the 8th poster in line 1 on Monday morning. Boards are laid out as 7 lines with
+# one topic per line per session, and n restarts at 1 on each line -- so the code
+# tells an attendee which line to walk to, which the old running P{session}.{n}
+# number did not. Matched case-sensitively: "T" is Tuesday, "Th" is Thursday.
+POSTER_CODE_RE = re.compile(r"^(Su|Th|M|T|W)(\d+)(AM|PM)(\d+)$")
+
+POSTER_CODE_DAY = {
+    "Su": "Sunday", "M": "Monday", "T": "Tuesday",
+    "W": "Wednesday", "Th": "Thursday",
+}
+
+
+# STOPGAP, remove once the organisers re-export. Exactly one poster kept its old
+# numeric SubmissionID: its title contains unescaped quotes (`What Does "Curvy"
+# Mean to You?`), which breaks the export badly enough that the organisers' own
+# renumbering skipped it. The slot is not a guess -- Tuesday morning, "Scene and
+# Object Perception and Recognition" is line 5, and 5 is the one number missing
+# from that line's otherwise complete 1..10 sequence.
+POSTER_CODE_OVERRIDE = {"76": "T5AM5"}
+
+
+def parse_poster_code(code):
+    """Split an organiser board code into (day, line, block, n), or None."""
+    code = clean(code)
+    code = POSTER_CODE_OVERRIDE.get(code, code)
+    m = POSTER_CODE_RE.match(code)
+    if not m:
+        return None
+    return POSTER_CODE_DAY[m.group(1)], int(m.group(2)), m.group(3), int(m.group(4))
 
 
 def build_posters(raw_posters, recovered):
@@ -286,19 +389,37 @@ def build_posters(raw_posters, recovered):
         start = parts[0].strip() if parts else ""
         end = parts[1].strip() if len(parts) > 1 else ""
 
-        # Assign a poster-session number (1–7) and a 1..n board number within it.
         block = "AM" if start and start < "12:00" else "PM"
         snum = POSTER_SESSION_NUM.get((day, block))
-        if snum is not None:
+        session_title = (
+            f"Poster Session {snum} · {topic}" if topic and snum
+            else (f"Poster Session {snum}" if snum else topic)
+        )
+
+        # Prefer the organiser's board code; it is what is printed on the board.
+        code = clean(p.get("SubmissionID"))
+        code = POSTER_CODE_OVERRIDE.get(code, code)
+        parsed = parse_poster_code(code)
+        if parsed:
+            code_day, line, code_block, seq = parsed
+            if code_day != day or code_block != block:
+                print(f"  WARNING board code {code} disagrees with the programme "
+                      f"({day} {block}); using the code")
+            poster_id = code
+            poster_number = code
+            sort_key = (snum or 99, line, seq)
+        elif snum is not None:
+            # Older exports carried no board code: fall back to the running
+            # P{session}.{board} number this script used to assign.
             board = board_counter.get(snum, 0) + 1
             board_counter[snum] = board
             poster_id = f"P{snum}.{board}"
             poster_number = f"{snum}.{board}"
-            session_title = f"Poster Session {snum} · {topic}" if topic else f"Poster Session {snum}"
+            sort_key = (snum, 0, board)
         else:
             poster_id = f"P{len(entries) + 1:03d}-x"
             poster_number = None
-            session_title = topic
+            sort_key = (99, 0, len(entries) + 1)
 
         entries.append({
             "id": poster_id,
@@ -321,15 +442,13 @@ def build_posters(raw_posters, recovered):
             "session_kind": "Poster Session",
             "session_start": start,
             "session_end": end,
+            "_sort": sort_key,
         })
 
-    # Display posters in board order: session 1 boards 1..n, then session 2, …
-    def order(e):
-        if e["talk_number"]:
-            s, b = e["talk_number"].split(".")
-            return (int(s), int(b))
-        return (99, 0)
-    entries.sort(key=order)
+    # Walking order: session 1 line 1 boards 1..n, then line 2, … then session 2.
+    entries.sort(key=lambda e: e["_sort"])
+    for e in entries:
+        del e["_sort"]
     return entries
 
 
