@@ -110,12 +110,15 @@ This writes `assets/ecvp-data.json` and prints per-type counts and a validation 
 
 The organisers' app-export mishandles double quotes the authors typed. In an **abstract** it truncates at the first `"` (emitting a stray `\` and dropping the rest); in a **title** it writes them unescaped, which breaks the JSON outright.
 
-As of the **2026-08-08** export the organisers work around this by substituting typographic single quotes (`'…'`) for the offending double quotes. They applied that to the **posters** file, which is now clean, but **not** to the **talks** file, where 7 abstracts are still truncated. Those 7 are the only entries not coming straight from the source.
+The organisers resolved this across both files by **2026-08-10**, substituting typographic single quotes (`'…'`) for the offending double quotes. **All 614 abstracts now come straight from the source export — nothing is patched or recovered.** The validation report confirms it on every run: `abstracts backfilled from recovery file: 0 of 47 available`.
 
-- `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract` (recovered from the previous complete dataset, verified to share the same opening text). The parser backfills **only** abstracts the source has broken, so a corrected export supersedes it automatically, and the validation report prints how many were actually used versus how many are available. It is keyed by both the old numeric ids and the board codes, so either export works, and it is deliberately kept larger than currently needed as a safety net if an export regresses.
-- `escape_stray_quotes()` repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter (tracking keys separately from values), and reports how many it fixed. No longer triggered by the current export, but retained for the same reason.
+The workarounds are retained but dormant, because these exports have regressed before:
 
-Every one of the 614 entries now has a title and an abstract. One residual cosmetic point: 7 poster abstracts lost their paragraph breaks in the 2026-08-08 export (the organisers' text is treated as authoritative, so these are not patched back).
+- `scripts/recovered_abstracts.json` maps `SubmissionID → full abstract`, recovered from an earlier complete dataset. The parser backfills **only** where the source is empty or genuinely truncated, so a corrected export supersedes it automatically. Keyed by both the old numeric ids and the board codes, so either export vintage works.
+- `escape_stray_quotes()` repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter, tracking keys separately from values.
+- `resolve_abstract()` does **not** treat a trailing `\` as proof of truncation. One abstract regained its full text while keeping the stray backslash, so the backslash is weighed against the recovered copy: backfill only if that copy is materially longer, otherwise strip the backslash and keep the source text.
+
+One cosmetic consequence: abstracts no longer carry paragraph breaks (30 across the dataset originally, now none), as the organisers' current export emits each as a single block. Content is complete; only the formatting differs, and their text is treated as authoritative rather than patched.
 
 ### Regenerating the app icons
 
@@ -198,6 +201,12 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 ---
 
 ## Version History
+
+**v1.3.2** (2026-08-10)
+- **Every abstract now comes straight from the organisers' export.** The final talks file clears the last 7 truncated abstracts, so nothing in the app is recovered or patched any more — the validation report reads `backfilled: 0 of 47 available`
+- No straight double quotes and no stray backslashes remain anywhere in the data
+- `resolve_abstract()` no longer treats a trailing `\` as proof of truncation: one abstract (Wexler, *Temporal evolution of idiosyncratic visual biases*) regained its full text while keeping the backslash, so the source is now compared against the recovered copy and only backfilled if that copy is materially longer
+- Nothing added, removed, renumbered or rescheduled: the only changes are 7 talk abstracts, all quote substitutions
 
 **v1.3.1** (2026-08-08)
 - **Every presentation now has an abstract.** The organisers supplied the two that had been missing throughout — `T397` (*Continuous Psychophysics in the Clinic*) and `M2PM12` (*Illusion of absence*)
