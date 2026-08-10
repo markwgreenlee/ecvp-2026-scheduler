@@ -218,17 +218,32 @@ BACKFILLED = []
 
 
 def resolve_abstract(raw_abstract, submission_id, recovered):
-    """Return the abstract, backfilling from `recovered` when the source value is
-    empty or truncated. Truncated abstracts end in a stray backslash because the
-    export cut them at the first double-quote character."""
+    """Return the abstract, backfilling from `recovered` when the source is empty
+    or truncated.
+
+    A trailing backslash is the residue of the export's quote bug, but it does
+    not always mean text was lost: once the organisers replaced the offending
+    double quotes, one abstract kept the backslash while regaining its full
+    text. So the backslash alone is not the test -- compare against the
+    recovered copy and only backfill when that copy is materially longer. Where
+    there is nothing to compare with, a stray backslash is simply stripped.
+    """
     a = clean(raw_abstract)
     if a and not a.endswith("\\"):
         return a
+
+    stripped = a.rstrip("\\").rstrip()
+    full = None
     for key in _submission_keys(submission_id):
         if key in recovered:
-            BACKFILLED.append(str(submission_id))
-            return recovered[key]
-    return a
+            full = recovered[key]
+            break
+
+    # 5% guards against a recovered copy that differs only in punctuation.
+    if full and len(full) > len(stripped) * 1.05:
+        BACKFILLED.append(str(submission_id))
+        return full
+    return stripped or full or a
 
 
 def build_author_fields(record):
