@@ -217,6 +217,67 @@ def _submission_keys(submission_id):
 BACKFILLED = []
 
 
+# Ids whose paragraph breaks were restored from the recovery file this run.
+PARAGRAPHS_RESTORED = []
+
+
+def _letters(text):
+    """(lowercased letters and digits, index) -- a spelling-only view of `text`."""
+    return [(c.lower(), i) for i, c in enumerate(text) if c.isalnum()]
+
+
+def restore_paragraphs(source, recovered):
+    """Re-apply `recovered`'s paragraph breaks to `source`.
+
+    The organisers' current export emits each abstract as a single block, losing
+    the paragraph structure earlier versions carried. Only whitespace is
+    inserted: the two texts are aligned on their letters and digits alone, so
+    differences in quote characters, dashes or spacing do not matter, and the
+    function refuses to act unless the spelling matches exactly. The result is
+    checked against the input before being returned, so this can add line breaks
+    and nothing else.
+    """
+    if "\n\n" not in recovered or "\n\n" in source or not source:
+        return source
+
+    src_letters, rec_letters = _letters(source), _letters(recovered)
+    if [c for c, _ in src_letters] != [c for c, _ in rec_letters]:
+        return source                      # not the same text; leave it alone
+
+    # how many letters precede each break in the recovered copy
+    breaks, seen, i = [], 0, 0
+    while i < len(recovered):
+        if recovered.startswith("\n\n", i):
+            breaks.append(seen)
+            while i < len(recovered) and recovered[i] == "\n":
+                i += 1
+            continue
+        if recovered[i].isalnum():
+            seen += 1
+        i += 1
+
+    pieces, prev = [], 0
+    for count in breaks:
+        if not 0 < count <= len(src_letters):
+            continue
+        cut = src_letters[count - 1][1] + 1     # just after that letter
+        # Carry any trailing punctuation with the paragraph it belongs to,
+        # so a break never lands between a sentence and its full stop.
+        while cut < len(source) and not source[cut].isspace() \
+                and not source[cut].isalnum():
+            cut += 1
+        pieces.append(source[prev:cut])
+        prev = cut
+    pieces.append(source[prev:])
+
+    result = "\n\n".join(p.strip() for p in pieces if p.strip())
+
+    # whitespace-only change, or we do not ship it
+    if "".join(result.split()) != "".join(source.split()):
+        return source
+    return result
+
+
 def resolve_abstract(raw_abstract, submission_id, recovered):
     """Return the abstract, backfilling from `recovered` when the source is empty
     or truncated.
@@ -229,21 +290,32 @@ def resolve_abstract(raw_abstract, submission_id, recovered):
     there is nothing to compare with, a stray backslash is simply stripped.
     """
     a = clean(raw_abstract)
-    if a and not a.endswith("\\"):
-        return a
 
-    stripped = a.rstrip("\\").rstrip()
     full = None
     for key in _submission_keys(submission_id):
         if key in recovered:
             full = recovered[key]
             break
 
+    def keep_source(text):
+        """Source text wins, but take the paragraph breaks back if it lost any."""
+        if full:
+            restored = restore_paragraphs(text, full)
+            if restored is not text and restored != text:
+                PARAGRAPHS_RESTORED.append(str(submission_id))
+                return restored
+        return text
+
+    if a and not a.endswith("\\"):
+        return keep_source(a)
+
+    stripped = a.rstrip("\\").rstrip()
+
     # 5% guards against a recovered copy that differs only in punctuation.
     if full and len(full) > len(stripped) * 1.05:
         BACKFILLED.append(str(submission_id))
         return full
-    return stripped or full or a
+    return keep_source(stripped) if stripped else (full or a)
 
 
 def build_author_fields(record):
@@ -702,6 +774,9 @@ def main():
     print(f"  abstracts backfilled from recovery file: {len(BACKFILLED)}"
           f" of {len(recovered)} available"
           + (f" -> {sorted(set(BACKFILLED))}" if BACKFILLED else ""))
+    print(f"  paragraph breaks restored: {len(set(PARAGRAPHS_RESTORED))} abstracts"
+          + (f" -> {sorted(set(PARAGRAPHS_RESTORED))}"
+             if PARAGRAPHS_RESTORED else ""))
     if truncated:
         print(f"  WARNING still-truncated abstracts: {truncated}")
     else:

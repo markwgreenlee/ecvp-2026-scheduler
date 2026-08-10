@@ -118,7 +118,7 @@ The workarounds are retained but dormant, because these exports have regressed b
 - `escape_stray_quotes()` repairs unescaped quotes in titles by walking the export and escaping every quote that is not a real delimiter, tracking keys separately from values.
 - `resolve_abstract()` does **not** treat a trailing `\` as proof of truncation. One abstract regained its full text while keeping the stray backslash, so the backslash is weighed against the recovered copy: backfill only if that copy is materially longer, otherwise strip the backslash and keep the source text.
 
-One cosmetic consequence: abstracts no longer carry paragraph breaks (30 across the dataset originally, now none), as the organisers' current export emits each as a single block. Content is complete; only the formatting differs, and their text is treated as authoritative rather than patched.
+The organisers' current export emits each abstract as a single block, losing the paragraph structure earlier versions carried. `restore_paragraphs()` puts it back for the 9 affected abstracts, taking the structure from the recovery copy while keeping the organisers' wording: the two texts are aligned on their letters and digits alone, so differences in quotes, dashes or spacing are irrelevant, and the function refuses to act unless the spelling matches exactly. It inserts whitespace and nothing else, and verifies that before returning — the diff against the previous release is 9 whitespace-only changes and zero text changes.
 
 ### Regenerating the app icons
 
@@ -201,6 +201,11 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 ---
 
 ## Version History
+
+**v1.3.3** (2026-08-10)
+- **Paragraph breaks restored** in the 9 abstracts that had them before the organisers' current export flattened each abstract into a single block. Long abstracts read as paragraphs again rather than one dense wall of text
+- The wording stays exactly as the organisers wrote it: `restore_paragraphs()` inserts whitespace only, aligns the two texts on letters and digits alone so quote and dash differences do not matter, and refuses to act unless the spelling matches. Verified as 9 whitespace-only changes and zero text changes
+- Every abstract still comes straight from the source export — nothing is backfilled
 
 **v1.3.2** (2026-08-10)
 - **Every abstract now comes straight from the organisers' export.** The final talks file clears the last 7 truncated abstracts, so nothing in the app is recovered or patched any more — the validation report reads `backfilled: 0 of 47 available`
