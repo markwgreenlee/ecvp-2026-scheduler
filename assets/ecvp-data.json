@@ -12001,20 +12001,22 @@
   "talk_number": "T2PM2",
   "time": "15:30",
   "time_tbc": false,
-  "title": "Rapid Negative Evaluation without Explicit Recognition in the Uncanny Valley Phenomenon",
+  "title": "Eye-movement manifestations of differential safety-behaviour strategies in social anxiety",
   "authors": [
-   "Kota Sasaki",
-   "Atsunori Ariga"
+   "Jastine Antolin",
+   "Ellen Seiss",
+   "Nicola Gregory"
   ],
   "author_numbers": [
    "1",
+   "1",
    "1"
   ],
-  "affiliations": "1. Chuo University (JP)",
-  "presenter": "Kota Sasaki",
+  "affiliations": "1. Bournemouth University (UK)",
+  "presenter": "Jastine Antolin",
   "organizer": "",
   "bio": "",
-  "abstract": "The uncanny valley refers to the negative affective response people experience toward human-like morphed entities involving animacy such as humanoid robots. Previous studies have shown that similar negative response can also arise for geometric, inanimate stimuli, suggesting that the underlying mechanism may not depend on animacy. The present study tested the categorization failure hypothesis, which proposes that uncategorizable stimuli automatically evoke immediate negative evaluation, even without conscious recognition. Across two experiments, we manipulated stimulus exposure duration (17, 50, or 283 ms) and measured likeability and recognition rates for unmorphed (original, categorizable) and morphed (uncategorizable) stimuli: geometric figures (Experiment 1) and faces (Experiment 2). If negative evaluations are triggered automatically by categorization failure, they should implicitly emerge for morphed, uncategorizable stimuli prior to explicit recognition. The results supported this prediction. For morphed, uncategorizable stimuli, likeability remained consistently low regardless of exposure duration, while recognition improved. That is, negative evaluations were observed even at the shortest exposure duration, at which participants reported no explicit recognition. On the other hand, both likeability and recognition rates for original, categorizable stimuli correlatively increased with longer exposure duration. These findings suggest that automatic categorization failure leads to early, implicit negative evaluation, independent of animacy or explicit recognition. The results provide insight into the temporal dynamics of affective processing and offer a unified account of the uncanny valley phenomenon across different types of stimuli free from the animacy-based discussion.",
+  "abstract": "Social-cognitive theories (e.g. Clark & Wells, 1995) suggest individuals with social anxiety (SA) employ both avoidance and impression management safety-behaviours to reduce anxiety. The avoidance sub-type manifests primarily as eye-contact avoidance. Cognitive behavioural therapies aim to reduce eye-contact avoidance in SA in favour of increased engagement with positive social cues (e.g. Yoshinaga et al., 2024).  However, both safety-behaviour types are thought to increase feelings of self-focussed attention, increasing anxiety. Despite the theory, the relationship between SA, feelings of self-focus and objective attention measured by eye-tracking, have not been examined during a live social interaction.  Therefore, we recorded eye-movements of non-clinical participants with high (HSA  N= 34), moderate (MSA N = 34), and low (LSA N = 18) SA during a live video call where a confederate interviewer displayed different  emotional expressions (positive, neutral, negative) and where participants’ self-camera was either visible or not (directly manipulating self-focus, as in Vriends et al., 2017). State anxiety, state social anxiety, and feelings of self-focus were also measured.  HSA participants reported greater self-focus, and higher state SA, which was unaffected by self-camera visibility. HSA made fewest fixations to the interviewer’s eyes/face, particularly when the confederate had a neutral/negative expression. The MSA group made more fixations to the interviewer’s eyes than the HSA group, despite reporting equivalent state anxiety.  All participants increased interviewer-directed gaze during a positive expression whilst reducing interviewer-directed gaze when the self-camera was visible.  This study provides the first evidence for differential safety-behaviour strategies according to SA level: HSA showed avoidance, whereas MSA showed behaviour consistent with impression management: making more eye contact, a socially desirable behaviour. Self-focus was highest in HSA individuals, suggesting avoidance may be associated with higher self-focus than impression management, but turning the self-camera on/off did not impact feelings of self-focus.",
   "day": "Tuesday",
   "date": "2026-08-25",
   "room": "",
@@ -12183,22 +12185,20 @@
   "talk_number": "T2PM8",
   "time": "15:30",
   "time_tbc": false,
-  "title": "Eye-movement manifestations of differential safety-behaviour strategies in social anxiety",
+  "title": "Rapid Negative Evaluation without Explicit Recognition in the Uncanny Valley Phenomenon",
   "authors": [
-   "Jastine Antolin",
-   "Ellen Seiss",
-   "Nicola Gregory"
+   "Kota Sasaki",
+   "Atsunori Ariga"
   ],
   "author_numbers": [
    "1",
-   "1",
    "1"
   ],
-  "affiliations": "1. Bournemouth University (UK)",
-  "presenter": "Jastine Antolin",
+  "affiliations": "1. Chuo University (JP)",
+  "presenter": "Kota Sasaki",
   "organizer": "",
   "bio": "",
-  "abstract": "Social-cognitive theories (e.g. Clark & Wells, 1995) suggest individuals with social anxiety (SA) employ both avoidance and impression management safety-behaviours to reduce anxiety. The avoidance sub-type manifests primarily as eye-contact avoidance. Cognitive behavioural therapies aim to reduce eye-contact avoidance in SA in favour of increased engagement with positive social cues (e.g. Yoshinaga et al., 2024).  However, both safety-behaviour types are thought to increase feelings of self-focussed attention, increasing anxiety. Despite the theory, the relationship between SA, feelings of self-focus and objective attention measured by eye-tracking, have not been examined during a live social interaction.  Therefore, we recorded eye-movements of non-clinical participants with high (HSA  N= 34), moderate (MSA N = 34), and low (LSA N = 18) SA during a live video call where a confederate interviewer displayed different  emotional expressions (positive, neutral, negative) and where participants’ self-camera was either visible or not (directly manipulating self-focus, as in Vriends et al., 2017). State anxiety, state social anxiety, and feelings of self-focus were also measured.  HSA participants reported greater self-focus, and higher state SA, which was unaffected by self-camera visibility. HSA made fewest fixations to the interviewer’s eyes/face, particularly when the confederate had a neutral/negative expression. The MSA group made more fixations to the interviewer’s eyes than the HSA group, despite reporting equivalent state anxiety.  All participants increased interviewer-directed gaze during a positive expression whilst reducing interviewer-directed gaze when the self-camera was visible.  This study provides the first evidence for differential safety-behaviour strategies according to SA level: HSA showed avoidance, whereas MSA showed behaviour consistent with impression management: making more eye contact, a socially desirable behaviour. Self-focus was highest in HSA individuals, suggesting avoidance may be associated with higher self-focus than impression management, but turning the self-camera on/off did not impact feelings of self-focus.",
+  "abstract": "The uncanny valley refers to the negative affective response people experience toward human-like morphed entities involving animacy such as humanoid robots. Previous studies have shown that similar negative response can also arise for geometric, inanimate stimuli, suggesting that the underlying mechanism may not depend on animacy. The present study tested the categorization failure hypothesis, which proposes that uncategorizable stimuli automatically evoke immediate negative evaluation, even without conscious recognition. Across two experiments, we manipulated stimulus exposure duration (17, 50, or 283 ms) and measured likeability and recognition rates for unmorphed (original, categorizable) and morphed (uncategorizable) stimuli: geometric figures (Experiment 1) and faces (Experiment 2). If negative evaluations are triggered automatically by categorization failure, they should implicitly emerge for morphed, uncategorizable stimuli prior to explicit recognition. The results supported this prediction. For morphed, uncategorizable stimuli, likeability remained consistently low regardless of exposure duration, while recognition improved. That is, negative evaluations were observed even at the shortest exposure duration, at which participants reported no explicit recognition. On the other hand, both likeability and recognition rates for original, categorizable stimuli correlatively increased with longer exposure duration. These findings suggest that automatic categorization failure leads to early, implicit negative evaluation, independent of animacy or explicit recognition. The results provide insight into the temporal dynamics of affective processing and offer a unified account of the uncanny valley phenomenon across different types of stimuli free from the animacy-based discussion.",
   "day": "Tuesday",
   "date": "2026-08-25",
   "room": "",

@@ -202,6 +202,11 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.3.4** (2026-08-11)
+- **Two Tuesday-afternoon posters exchanged board codes** at a presenter's request, per the organisers' 2026-08-11 export: *Eye-movement manifestations of differential safety-behaviour strategies* (Antolin, Bournemouth) moves from `T2PM8` to `T2PM2`, and *Rapid Negative Evaluation without Explicit Recognition in the Uncanny Valley* (Sasaki, Chuo) moves from `T2PM2` to `T2PM8`
+- Both stay in the same Tuesday 15:30 session; only the board position changes. Each presentation carried its own title, authors, affiliation and abstract with it
+- Verified against the previous release: the source export differs in exactly two `SubmissionID` fields and nothing else, and the built data differs in exactly those two entries. Same 614 ids, same 442 posters, nothing added, removed, rescheduled or reworded
+
 **v1.3.3** (2026-08-10)
 - **Paragraph breaks restored** in the 9 abstracts that had them before the organisers' current export flattened each abstract into a single block. Long abstracts read as paragraphs again rather than one dense wall of text
 - The wording stays exactly as the organisers wrote it: `restore_paragraphs()` inserts whitespace only, aligns the two texts on letters and digits alone so quote and dash differences do not matter, and refuses to act unless the spelling matches. Verified as 9 whitespace-only changes and zero text changes
