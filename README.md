@@ -202,6 +202,11 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.3.5** (2026-08-20)
+- **One poster author's affiliation corrected**, per the organisers' 2026-08-20 export: on `M6PM4` (*Retinotopic specificity of the perceptual effects of focused transcranial ultrasound stimulation of the primary visual cortex*), Julien Besle is now listed under University of Plymouth alongside his four co-authors instead of University of Iceland
+- The source export differs from the previous one in exactly one field — that author's affiliation index — and the built data differs in exactly one entry. Same 614 ids, same 442 posters, nothing else touched
+- Known, reported to the organisers: `M6PM4` still carries *University of Iceland (UK)* as affiliation 2, which no author now references, so it renders with nothing pointing to it. Four other posters (`M7AM9`, `M2PM1`, `M2PM7`, `T3AM2`) already list affiliations no author cites. The app shows the organisers' affiliation list as supplied rather than pruning it, so these are fixed at source
+
 **v1.3.4** (2026-08-11)
 - **Two Tuesday-afternoon posters exchanged board codes** at a presenter's request, per the organisers' 2026-08-11 export: *Eye-movement manifestations of differential safety-behaviour strategies* (Antolin, Bournemouth) moves from `T2PM8` to `T2PM2`, and *Rapid Negative Evaluation without Explicit Recognition in the Uncanny Valley* (Sasaki, Chuo) moves from `T2PM2` to `T2PM8`
 - Both stay in the same Tuesday 15:30 session; only the board position changes. Each presentation carried its own title, authors, affiliation and abstract with it
