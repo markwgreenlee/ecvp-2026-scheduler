@@ -221,6 +221,55 @@ BACKFILLED = []
 PARAGRAPHS_RESTORED = []
 
 
+# Rooms the organisers' export gets wrong, keyed by SubmissionID:
+#   SubmissionID -> (room the export is expected to say, room it should say)
+#
+# The CPC @ ECVP symposium runs Thursday 14:00-15:12. Its opening talk (T387,
+# Graf) is in Bayview Suite, but the export puts the other four in Purbeck
+# Lounge, where the Spatial Vision session is already running 14:00-15:15.
+# That was the only room double-booking left in the programme, and it also
+# split the symposium into two blocks in the schedule view, because talks are
+# grouped by (date, session, room). The four are corrected to Bayview Suite,
+# which is otherwise empty between 11:45 and 17:00.
+#
+# The expected room is checked before anything is changed, so if the organisers
+# fix this at source the override reports itself as redundant instead of
+# silently pinning a stale value. Remove it once that happens -- the same way
+# POSTER_CODE_OVERRIDE was removed when T5AM5 gained a real board code.
+ROOM_OVERRIDE = {
+    506: ("Purbeck Lounge", "Bayview Suite"),
+    361: ("Purbeck Lounge", "Bayview Suite"),
+    327: ("Purbeck Lounge", "Bayview Suite"),
+    397: ("Purbeck Lounge", "Bayview Suite"),
+}
+
+# Ids whose room was corrected this run.
+ROOMS_OVERRIDDEN = []
+
+
+def apply_room_override(submission_id, room):
+    """Correct a known-wrong room, but only if the export still says what we expect."""
+    try:
+        key = int(round(float(submission_id)))
+    except (TypeError, ValueError):
+        return room
+    if key not in ROOM_OVERRIDE:
+        return room
+
+    expected, corrected = ROOM_OVERRIDE[key]
+    if room == corrected:
+        print(f"  NOTE: room override for T{key} is redundant -- the export now "
+              f"says {corrected!r}. Remove it from ROOM_OVERRIDE.")
+        return room
+    if room != expected:
+        print(f"  WARNING room override for T{key} expected {expected!r} but the "
+              f"export says {room!r}; leaving the export's value alone")
+        return room
+
+    ROOMS_OVERRIDDEN.append(f"T{key}")
+    return corrected
+
+
 def _letters(text):
     """(lowercased letters and digits, index) -- a spelling-only view of `text`."""
     return [(c.lower(), i) for i, c in enumerate(text) if c.isalnum()]
@@ -392,7 +441,7 @@ def build_talks(raw_talks, recovered):
             "abstract": resolve_abstract(t.get("Abstract"), sub, recovered),
             "day": day,
             "date": DAY_TO_DATE.get(day, ""),
-            "room": clean(t.get("Room")),
+            "room": apply_room_override(sub, clean(t.get("Room"))),
             "session_title": session,
             "session_kind": "Symposium" if is_sym else "Talk Session",
             "session_start": time,
@@ -777,6 +826,8 @@ def main():
     print(f"  paragraph breaks restored: {len(set(PARAGRAPHS_RESTORED))} abstracts"
           + (f" -> {sorted(set(PARAGRAPHS_RESTORED))}"
              if PARAGRAPHS_RESTORED else ""))
+    print(f"  rooms corrected: {len(ROOMS_OVERRIDDEN)} of {len(ROOM_OVERRIDE)} overrides"
+          + (f" -> {sorted(set(ROOMS_OVERRIDDEN))}" if ROOMS_OVERRIDDEN else ""))
     if truncated:
         print(f"  WARNING still-truncated abstracts: {truncated}")
     else:
