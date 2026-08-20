@@ -202,6 +202,12 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.3.6** (2026-08-20)
+- **The Thursday 17:00 symposium moved room**, per the organisers' 2026-08-20 talks export: *Visuomotor transforms in prostheses, virtual reality, and teleoperation* (`T74`, `T75`, `T110`, `T379`) moves from **Bayview Suite** to **Purbeck Lounge**. The other 53 Bayview Suite entries are unaffected
+- **One malformed record repaired before import, and reported to the organisers.** The export was missing a closing quote on `T74`'s room field — `"Room": "Purbeck Lounge, "Title": …` — which swallowed the title into the room string. Imported as-is, that talk would have lost its title entirely and displayed a room containing the title text. One character was added to close the quote; nothing else in the file was touched
+- With that closed the export parses clean: `extract_json_array` now reports zero repaired quotes, where the raw file needed three, all at that one site. The previous talks export needed none
+- Verified against the previous release: the source differs in exactly four `Room` fields and the built data in exactly those four entries, `room` only. Same 614 ids, nothing added, removed, rescheduled or reworded
+
 **v1.3.5** (2026-08-20)
 - **One poster author's affiliation corrected**, per the organisers' 2026-08-20 export: on `M6PM4` (*Retinotopic specificity of the perceptual effects of focused transcranial ultrasound stimulation of the primary visual cortex*), Julien Besle is now listed under University of Plymouth alongside his four co-authors instead of University of Iceland
 - The source export differs from the previous one in exactly one field — that author's affiliation index — and the built data differs in exactly one entry. Same 614 ids, same 442 posters, nothing else touched
