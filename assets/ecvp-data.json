@@ -4288,6 +4288,134 @@
   "session_end": ""
  },
  {
+  "id": "T506",
+  "kind": "symposium",
+  "talk_number": null,
+  "time": "14:18",
+  "time_tbc": false,
+  "title": "The Integration of Shape Information Across Spatial Scales during the Visual Perception of 3D Object Geometry: Evidence from Deep Neural Networks, ERPs and Eye Tracking",
+  "authors": [
+   "Charles Leek",
+   "Filipe Cristino",
+   "Dietmar Heinke"
+  ],
+  "author_numbers": [
+   "1",
+   "2",
+   "3"
+  ],
+  "affiliations": "1. University of Southampton (UK)\n2. Nottingham Trent University (UK)\n3. University of Birmingham (UK)",
+  "presenter": "Charles Leek",
+  "organizer": "",
+  "bio": "",
+  "abstract": "The visual perception of 3D object geometry requires the computation of image shape features across different spatial scales from local edges to complex parts, the derivation of 3D spatial configuration, and the integration of these features into structured representations of 3D object geometry. In this talk we outline a series of studies that aim to elucidate the underlying computational processes that support 3D object recognitiion. Using converging evidence from behavioural studies, event-related potentials (ERPs), eye tracking and computational modelling, we show that 3D object recognition occurs in parallel across multiple spatial scales of image features and configural properties. Some limitations of deep convolutional neural networks as models of 3D object recognition are also discussed. We outline a novel multi-pathway parallel architecture for 3D object recognition that combines both compositional (parts-based) and image-based computational pathways.",
+  "day": "Thursday",
+  "date": "2026-08-27",
+  "room": "Bayview Suite",
+  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
+  "session_kind": "Symposium",
+  "session_start": "14:18",
+  "session_end": ""
+ },
+ {
+  "id": "T361",
+  "kind": "symposium",
+  "talk_number": null,
+  "time": "14:36",
+  "time_tbc": false,
+  "title": "Reward Learning Reshapes Neural Representations of Visual Perception and Imagery",
+  "authors": [
+   "Arezoo Pooresmaeili",
+   "Nathan Huneke",
+   "Guido Maiello",
+   "Tianwen Chen"
+  ],
+  "author_numbers": [
+   "1",
+   "2",
+   "1",
+   "1"
+  ],
+  "affiliations": "1. School of Psychology, University of Southampton (UK)\n2. Department of Psychiatry, University of Southampton (UK)",
+  "presenter": "Arezoo Pooresmaeili",
+  "organizer": "",
+  "bio": "",
+  "abstract": "To interact effectively with our environment, we must distinguish objects not only based on their perceptual features (e.g., whether a stimulus is a face) but also on their learned significance (e.g., whether a face is familiar or important). These functions are supported by regions along the ventral stream of visual processing. In particular, visual categorisation is supported by category-selective regions along the occipitotemporal ventral stream, such as the fusiform face area (FFA) and parahippocampal place area (PPA), during both perception and imagery. More anterior regions of the temporal cortex support the representation of higher-level information such as familiarity, meaning, and behavioural relevance. However, it remains unclear how learning, particularly reward and punishment, shapes these category representations over time and across tasks. To address this, we used functional magnetic resonance imaging (fMRI) to measure brain activity across two sessions in which participants viewed or imagined faces and houses. Between sessions, they learned that one category was associated with reward and the other with punishment. As expected, occipitotemporal category-selective regions showed reliable responses to faces and houses in both tasks. After learning, brain responses increasingly reflected the motivational value of the categories: multivariate activity patterns across a distributed network more strongly distinguished rewarded from punished stimuli. Crucially, the strongest effects emerged in anterior temporal regions, which are downstream of occipitotemporal category-selective regions. Importantly, these value-related effects did not differ significantly between perception and imagery. These findings show that learning about reward and punishment systematically alters how visual categories are represented at higher levels of the ventral stream. In particular, the anterior temporal cortex appears to integrate learned value into category representations, linking perceptual inputs to their acquired meaning and behavioural relevance. The generalization of these effects across perception and imagery suggests that learned value is embedded in abstract, task-independent representations.",
+  "day": "Thursday",
+  "date": "2026-08-27",
+  "room": "Bayview Suite",
+  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
+  "session_kind": "Symposium",
+  "session_start": "14:36",
+  "session_end": ""
+ },
+ {
+  "id": "T327",
+  "kind": "symposium",
+  "talk_number": null,
+  "time": "14:54",
+  "time_tbc": false,
+  "title": "Colour Inference in the Wild: #theDress Ten Years On",
+  "authors": [
+   "Christoph Witzel"
+  ],
+  "author_numbers": [
+   "1"
+  ],
+  "affiliations": "1. School of Psychology, University of Southampton (UK)",
+  "presenter": "Christoph Witzel",
+  "organizer": "",
+  "bio": "",
+  "abstract": "#TheDress was born in the world-wide web more than 10 years ago, when the ambiguous photo of a dress revealed striking individual differences in colour perception – many see it white and gold, many others blue and black. Subsequently, research has established that these are not merely differences in colour naming, but a continuous variation of perception. This variation is related to unconscious inferences about the lighting conditions in the photo and to a person’s sleep-wake cycle assumed to mediate inferred lighting conditions. Many candidate optical and physiological causes of the individual differences have been excluded. The perception of #TheDress can be primed by visual stimuli that manipulate the surround of the dress. New images that cause similar individual differences as #TheDress have been found and may be generated through a simple algorithm. However, the known determinants of #TheDress explain only a small amount of individual variation, implying that they only predict individual differences statistically across a large sample of participants. New results show that neither visual nor verbal primes of lighting assumptions affect #TheDress when they do not contain the dress itself. The original assumption that daylight variation is essential to the individual differences has been moderated. Rotating the hue of #TheDress gradually decreases the magnitude of individual variation, implying that individual differences might be stronger along the daylight locus, but not exclusive to it. The colours of #TheShoe, a picture of a shoe that many see turquoise and grey and others pink and white, vary in a direction almost perpendicular to the daylight locus. #TheShoe works by a similar principle as #TheDress: The perception of #TheShoe is correlated with #TheDress, and we can create new images with #TheShoe properties using the #TheDress algorithm. A more detailed understanding is necessary to provide reliable predictions of the striking individual differences.",
+  "day": "Thursday",
+  "date": "2026-08-27",
+  "room": "Bayview Suite",
+  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
+  "session_kind": "Symposium",
+  "session_start": "14:54",
+  "session_end": ""
+ },
+ {
+  "id": "T397",
+  "kind": "symposium",
+  "talk_number": null,
+  "time": "15:12",
+  "time_tbc": false,
+  "title": "Continuous Psychophysics in the Clinic",
+  "authors": [
+   "Veronica Pisu",
+   "Aleksandrs Koselevs",
+   "Sarah Cutler",
+   "Sam Khandhadia",
+   "Isabel Escofet",
+   "Jay Self",
+   "Andrew Lotery",
+   "Guido Maiello"
+  ],
+  "author_numbers": [
+   "1",
+   "1",
+   "2",
+   "2",
+   "2,3",
+   "1,2",
+   "1,2",
+   "1"
+  ],
+  "affiliations": "1. University of Southampton (UK)\n2. University Hospital Southampton (UK)\n3. Salisbury District Hospital (UK)",
+  "presenter": "Veronica Pisu",
+  "organizer": "",
+  "bio": "",
+  "abstract": "Standard clinical vision tests (e.g., acuity charts, perimetry) involve a trade‑off between ease of administration and informativeness: some are quick but narrowly focused, whereas others provide richer information at the cost of time and effort. This trade‑off limits the assessment of functional vision relevant to everyday visual performance in routine clinical practice. Continuous psychophysics offers a promising alternative, using an intuitive target‑tracking task to obtain reliable estimates of visual and motor function (Bonnen et al., 2015; Straub & Rothkopf, 2022). In a pilot study, we evaluated the feasibility, acceptability, and reliability of continuous psychophysics in clinical settings and explored the association of tracking performance with visual acuity. Twelve adults with retinal disease (54–86 years) attending an intravitreal injection clinic completed two same‑day target‑tracking sessions and rated the task using the System Usability Scale (SUS). Participants used a mouse to track a randomly moving concentric Gabor target (10 trials per session); testing was binocular and unaided. The task was successfully integrated into clinical routine, with short session durations (≈ 4 minutes including self-paced breaks) and high completion rates (11 participants completed both sessions), supporting feasibility. Notably, participants rated the task as highly acceptable (mean SUS > 85; 0–100 scale, higher = better). Tracking performance indices showed excellent test–retest reliability (rs ≥ .84, ps < .05, N = 6) and a clear improvement between sessions in post‑injection assessments (N = 5), consistent with short‑term functional recovery and changes in optical correction (N = 1). Surprisingly, tracking performance was not significantly associated with visual acuity, suggesting that the task captures functional aspects not indexed by acuity alone. These findings support the translational potential of continuous psychophysics, and motivate larger studies and the development of methods to disentangle visual and motor contributions to target-tracking performance.",
+  "day": "Thursday",
+  "date": "2026-08-27",
+  "room": "Bayview Suite",
+  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
+  "session_kind": "Symposium",
+  "session_start": "15:12",
+  "session_end": ""
+ },
+ {
   "id": "T35",
   "kind": "talk",
   "talk_number": null,
@@ -4647,134 +4775,6 @@
   "session_title": "Perception and Action",
   "session_kind": "Talk Session",
   "session_start": "15:15",
-  "session_end": ""
- },
- {
-  "id": "T506",
-  "kind": "symposium",
-  "talk_number": null,
-  "time": "14:18",
-  "time_tbc": false,
-  "title": "The Integration of Shape Information Across Spatial Scales during the Visual Perception of 3D Object Geometry: Evidence from Deep Neural Networks, ERPs and Eye Tracking",
-  "authors": [
-   "Charles Leek",
-   "Filipe Cristino",
-   "Dietmar Heinke"
-  ],
-  "author_numbers": [
-   "1",
-   "2",
-   "3"
-  ],
-  "affiliations": "1. University of Southampton (UK)\n2. Nottingham Trent University (UK)\n3. University of Birmingham (UK)",
-  "presenter": "Charles Leek",
-  "organizer": "",
-  "bio": "",
-  "abstract": "The visual perception of 3D object geometry requires the computation of image shape features across different spatial scales from local edges to complex parts, the derivation of 3D spatial configuration, and the integration of these features into structured representations of 3D object geometry. In this talk we outline a series of studies that aim to elucidate the underlying computational processes that support 3D object recognitiion. Using converging evidence from behavioural studies, event-related potentials (ERPs), eye tracking and computational modelling, we show that 3D object recognition occurs in parallel across multiple spatial scales of image features and configural properties. Some limitations of deep convolutional neural networks as models of 3D object recognition are also discussed. We outline a novel multi-pathway parallel architecture for 3D object recognition that combines both compositional (parts-based) and image-based computational pathways.",
-  "day": "Thursday",
-  "date": "2026-08-27",
-  "room": "Purbeck Lounge",
-  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
-  "session_kind": "Symposium",
-  "session_start": "14:18",
-  "session_end": ""
- },
- {
-  "id": "T361",
-  "kind": "symposium",
-  "talk_number": null,
-  "time": "14:36",
-  "time_tbc": false,
-  "title": "Reward Learning Reshapes Neural Representations of Visual Perception and Imagery",
-  "authors": [
-   "Arezoo Pooresmaeili",
-   "Nathan Huneke",
-   "Guido Maiello",
-   "Tianwen Chen"
-  ],
-  "author_numbers": [
-   "1",
-   "2",
-   "1",
-   "1"
-  ],
-  "affiliations": "1. School of Psychology, University of Southampton (UK)\n2. Department of Psychiatry, University of Southampton (UK)",
-  "presenter": "Arezoo Pooresmaeili",
-  "organizer": "",
-  "bio": "",
-  "abstract": "To interact effectively with our environment, we must distinguish objects not only based on their perceptual features (e.g., whether a stimulus is a face) but also on their learned significance (e.g., whether a face is familiar or important). These functions are supported by regions along the ventral stream of visual processing. In particular, visual categorisation is supported by category-selective regions along the occipitotemporal ventral stream, such as the fusiform face area (FFA) and parahippocampal place area (PPA), during both perception and imagery. More anterior regions of the temporal cortex support the representation of higher-level information such as familiarity, meaning, and behavioural relevance. However, it remains unclear how learning, particularly reward and punishment, shapes these category representations over time and across tasks. To address this, we used functional magnetic resonance imaging (fMRI) to measure brain activity across two sessions in which participants viewed or imagined faces and houses. Between sessions, they learned that one category was associated with reward and the other with punishment. As expected, occipitotemporal category-selective regions showed reliable responses to faces and houses in both tasks. After learning, brain responses increasingly reflected the motivational value of the categories: multivariate activity patterns across a distributed network more strongly distinguished rewarded from punished stimuli. Crucially, the strongest effects emerged in anterior temporal regions, which are downstream of occipitotemporal category-selective regions. Importantly, these value-related effects did not differ significantly between perception and imagery. These findings show that learning about reward and punishment systematically alters how visual categories are represented at higher levels of the ventral stream. In particular, the anterior temporal cortex appears to integrate learned value into category representations, linking perceptual inputs to their acquired meaning and behavioural relevance. The generalization of these effects across perception and imagery suggests that learned value is embedded in abstract, task-independent representations.",
-  "day": "Thursday",
-  "date": "2026-08-27",
-  "room": "Purbeck Lounge",
-  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
-  "session_kind": "Symposium",
-  "session_start": "14:36",
-  "session_end": ""
- },
- {
-  "id": "T327",
-  "kind": "symposium",
-  "talk_number": null,
-  "time": "14:54",
-  "time_tbc": false,
-  "title": "Colour Inference in the Wild: #theDress Ten Years On",
-  "authors": [
-   "Christoph Witzel"
-  ],
-  "author_numbers": [
-   "1"
-  ],
-  "affiliations": "1. School of Psychology, University of Southampton (UK)",
-  "presenter": "Christoph Witzel",
-  "organizer": "",
-  "bio": "",
-  "abstract": "#TheDress was born in the world-wide web more than 10 years ago, when the ambiguous photo of a dress revealed striking individual differences in colour perception – many see it white and gold, many others blue and black. Subsequently, research has established that these are not merely differences in colour naming, but a continuous variation of perception. This variation is related to unconscious inferences about the lighting conditions in the photo and to a person’s sleep-wake cycle assumed to mediate inferred lighting conditions. Many candidate optical and physiological causes of the individual differences have been excluded. The perception of #TheDress can be primed by visual stimuli that manipulate the surround of the dress. New images that cause similar individual differences as #TheDress have been found and may be generated through a simple algorithm. However, the known determinants of #TheDress explain only a small amount of individual variation, implying that they only predict individual differences statistically across a large sample of participants. New results show that neither visual nor verbal primes of lighting assumptions affect #TheDress when they do not contain the dress itself. The original assumption that daylight variation is essential to the individual differences has been moderated. Rotating the hue of #TheDress gradually decreases the magnitude of individual variation, implying that individual differences might be stronger along the daylight locus, but not exclusive to it. The colours of #TheShoe, a picture of a shoe that many see turquoise and grey and others pink and white, vary in a direction almost perpendicular to the daylight locus. #TheShoe works by a similar principle as #TheDress: The perception of #TheShoe is correlated with #TheDress, and we can create new images with #TheShoe properties using the #TheDress algorithm. A more detailed understanding is necessary to provide reliable predictions of the striking individual differences.",
-  "day": "Thursday",
-  "date": "2026-08-27",
-  "room": "Purbeck Lounge",
-  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
-  "session_kind": "Symposium",
-  "session_start": "14:54",
-  "session_end": ""
- },
- {
-  "id": "T397",
-  "kind": "symposium",
-  "talk_number": null,
-  "time": "15:12",
-  "time_tbc": false,
-  "title": "Continuous Psychophysics in the Clinic",
-  "authors": [
-   "Veronica Pisu",
-   "Aleksandrs Koselevs",
-   "Sarah Cutler",
-   "Sam Khandhadia",
-   "Isabel Escofet",
-   "Jay Self",
-   "Andrew Lotery",
-   "Guido Maiello"
-  ],
-  "author_numbers": [
-   "1",
-   "1",
-   "2",
-   "2",
-   "2,3",
-   "1,2",
-   "1,2",
-   "1"
-  ],
-  "affiliations": "1. University of Southampton (UK)\n2. University Hospital Southampton (UK)\n3. Salisbury District Hospital (UK)",
-  "presenter": "Veronica Pisu",
-  "organizer": "",
-  "bio": "",
-  "abstract": "Standard clinical vision tests (e.g., acuity charts, perimetry) involve a trade‑off between ease of administration and informativeness: some are quick but narrowly focused, whereas others provide richer information at the cost of time and effort. This trade‑off limits the assessment of functional vision relevant to everyday visual performance in routine clinical practice. Continuous psychophysics offers a promising alternative, using an intuitive target‑tracking task to obtain reliable estimates of visual and motor function (Bonnen et al., 2015; Straub & Rothkopf, 2022). In a pilot study, we evaluated the feasibility, acceptability, and reliability of continuous psychophysics in clinical settings and explored the association of tracking performance with visual acuity. Twelve adults with retinal disease (54–86 years) attending an intravitreal injection clinic completed two same‑day target‑tracking sessions and rated the task using the System Usability Scale (SUS). Participants used a mouse to track a randomly moving concentric Gabor target (10 trials per session); testing was binocular and unaided. The task was successfully integrated into clinical routine, with short session durations (≈ 4 minutes including self-paced breaks) and high completion rates (11 participants completed both sessions), supporting feasibility. Notably, participants rated the task as highly acceptable (mean SUS > 85; 0–100 scale, higher = better). Tracking performance indices showed excellent test–retest reliability (rs ≥ .84, ps < .05, N = 6) and a clear improvement between sessions in post‑injection assessments (N = 5), consistent with short‑term functional recovery and changes in optical correction (N = 1). Surprisingly, tracking performance was not significantly associated with visual acuity, suggesting that the task captures functional aspects not indexed by acuity alone. These findings support the translational potential of continuous psychophysics, and motivate larger studies and the development of methods to disentangle visual and motor contributions to target-tracking performance.",
-  "day": "Thursday",
-  "date": "2026-08-27",
-  "room": "Purbeck Lounge",
-  "session_title": "Symposium: CPC @ ECVP: Perception as Inference Across Scales — from natural scene statistics to neural computation and clinical translation",
-  "session_kind": "Symposium",
-  "session_start": "15:12",
   "session_end": ""
  },
  {

@@ -202,6 +202,12 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.3.7** (2026-08-20)
+- **The CPC @ ECVP symposium is now all in one room.** The export put its opening talk (`T387`, Graf, Thursday 14:00) in Bayview Suite and the other four in Purbeck Lounge — where the *Spatial Vision* session was already running 14:00–15:15. The four are corrected to Bayview Suite, which was otherwise empty between 11:45 and 17:00
+- **This was the last room double-booking in the programme**, and the check now reports zero. It also split the symposium into two blocks in the schedule view, since talks are grouped by `(date, session, room)`; the five now list contiguously
+- Applied as a checked `ROOM_OVERRIDE` in `parse_ecvp.py` rather than an edit to the export, so the organisers' next file cannot silently revert it. The override verifies the export still says `Purbeck Lounge` before changing anything: if the organisers fix it at source it reports itself redundant and asks to be removed, and if the export says anything else it warns and leaves the value alone. Reported to the organisers; remove the override once their file is corrected
+- The validation report gained a `rooms corrected` line, so any override in force is visible on every run
+
 **v1.3.6** (2026-08-20)
 - **The Thursday 17:00 symposium moved room**, per the organisers' 2026-08-20 talks export: *Visuomotor transforms in prostheses, virtual reality, and teleoperation* (`T74`, `T75`, `T110`, `T379`) moves from **Bayview Suite** to **Purbeck Lounge**. The other 53 Bayview Suite entries are unaffected
 - **One malformed record repaired before import, and reported to the organisers.** The export was missing a closing quote on `T74`'s room field — `"Room": "Purbeck Lounge, "Title": …` — which swallowed the title into the room string. Imported as-is, that talk would have lost its title entirely and displayed a room containing the title text. One character was added to close the quote; nothing else in the file was touched
