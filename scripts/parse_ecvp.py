@@ -221,53 +221,10 @@ BACKFILLED = []
 PARAGRAPHS_RESTORED = []
 
 
-# Rooms the organisers' export gets wrong, keyed by SubmissionID:
-#   SubmissionID -> (room the export is expected to say, room it should say)
-#
-# The CPC @ ECVP symposium runs Thursday 14:00-15:12. Its opening talk (T387,
-# Graf) is in Bayview Suite, but the export puts the other four in Purbeck
-# Lounge, where the Spatial Vision session is already running 14:00-15:15.
-# That was the only room double-booking left in the programme, and it also
-# split the symposium into two blocks in the schedule view, because talks are
-# grouped by (date, session, room). The four are corrected to Bayview Suite,
-# which is otherwise empty between 11:45 and 17:00.
-#
-# The expected room is checked before anything is changed, so if the organisers
-# fix this at source the override reports itself as redundant instead of
-# silently pinning a stale value. Remove it once that happens -- the same way
-# POSTER_CODE_OVERRIDE was removed when T5AM5 gained a real board code.
-ROOM_OVERRIDE = {
-    506: ("Purbeck Lounge", "Bayview Suite"),
-    361: ("Purbeck Lounge", "Bayview Suite"),
-    327: ("Purbeck Lounge", "Bayview Suite"),
-    397: ("Purbeck Lounge", "Bayview Suite"),
-}
-
-# Ids whose room was corrected this run.
-ROOMS_OVERRIDDEN = []
-
-
-def apply_room_override(submission_id, room):
-    """Correct a known-wrong room, but only if the export still says what we expect."""
-    try:
-        key = int(round(float(submission_id)))
-    except (TypeError, ValueError):
-        return room
-    if key not in ROOM_OVERRIDE:
-        return room
-
-    expected, corrected = ROOM_OVERRIDE[key]
-    if room == corrected:
-        print(f"  NOTE: room override for T{key} is redundant -- the export now "
-              f"says {corrected!r}. Remove it from ROOM_OVERRIDE.")
-        return room
-    if room != expected:
-        print(f"  WARNING room override for T{key} expected {expected!r} but the "
-              f"export says {room!r}; leaving the export's value alone")
-        return room
-
-    ROOMS_OVERRIDDEN.append(f"T{key}")
-    return corrected
+# Ids whose affiliation list had unreferenced entries dropped this run, and
+# ids whose author-to-affiliation mapping was too damaged to prune safely.
+AFFILIATIONS_PRUNED = []
+AFF_MAPPING_SUSPECT = []
 
 
 def _letters(text):
@@ -393,10 +350,59 @@ def build_author_fields(record):
         return None, None, None
 
     affs = record.get("Affiliations") or []
+    keep = _referenced_affiliations(record, author_objs, len(affs))
     affiliations = "\n".join(
-        f"{i + 1}. {clean(a)}" for i, a in enumerate(affs) if clean(a)
+        f"{i + 1}. {clean(a)}"
+        for i, a in enumerate(affs)
+        if clean(a) and (keep is None or (i + 1) in keep)
     )
     return names, numbers, affiliations
+
+
+def _referenced_affiliations(record, author_objs, n_affs):
+    """Affiliation numbers at least one author cites, or None to keep them all.
+
+    The export sometimes lists an affiliation no author is attached to -- a
+    co-author moves institution and the old entry is left behind. Rendering it
+    puts a numbered line under the authors with nothing pointing at it, so
+    those are dropped. Numbering is left alone rather than closed up, so the
+    superscripts beside the authors still match the list.
+
+    Returns None when the mapping cannot be trusted, in which case every
+    affiliation is kept. Two shapes of damage occur in the export and both
+    make "unreferenced" impossible to determine:
+
+    - A lost comma inside `aff`. `[1,2]` becomes the float `[1.2]`, seen on
+      M2PM7, whose two authors are really attached to both 1 and 2. Pruning on
+      the truncated reading would delete a real affiliation.
+    - An index outside the list: M6PM9 cites 9 of 8 affiliations, W4PM1 cites
+      0. Something is missing or misnumbered, so the rest cannot be judged.
+
+    Both are reported at the end of the run and belong back with the
+    organisers; this only declines to make them worse.
+    """
+    used = set()
+    for a in author_objs:
+        for n in a.get("aff") or []:
+            if isinstance(n, bool) or not isinstance(n, (int, float)):
+                return _suspect(record, f"non-numeric affiliation index {n!r}")
+            if float(n) != int(n):
+                return _suspect(record, f"fractional affiliation index {n!r} "
+                                        "(a lost comma, e.g. [1,2] written [1.2])")
+            if not 1 <= int(n) <= n_affs:
+                return _suspect(record, f"affiliation index {int(n)} outside "
+                                        f"1..{n_affs}")
+            used.add(int(n))
+
+    if not used or len(used) == n_affs:
+        return None                      # nothing to drop
+    AFFILIATIONS_PRUNED.append(str(record.get("SubmissionID")))
+    return used
+
+
+def _suspect(record, reason):
+    AFF_MAPPING_SUSPECT.append(f"{record.get('SubmissionID')} ({reason})")
+    return None
 
 
 def build_talks(raw_talks, recovered):
@@ -441,7 +447,7 @@ def build_talks(raw_talks, recovered):
             "abstract": resolve_abstract(t.get("Abstract"), sub, recovered),
             "day": day,
             "date": DAY_TO_DATE.get(day, ""),
-            "room": apply_room_override(sub, clean(t.get("Room"))),
+            "room": clean(t.get("Room")),
             "session_title": session,
             "session_kind": "Symposium" if is_sym else "Talk Session",
             "session_start": time,
@@ -826,8 +832,13 @@ def main():
     print(f"  paragraph breaks restored: {len(set(PARAGRAPHS_RESTORED))} abstracts"
           + (f" -> {sorted(set(PARAGRAPHS_RESTORED))}"
              if PARAGRAPHS_RESTORED else ""))
-    print(f"  rooms corrected: {len(ROOMS_OVERRIDDEN)} of {len(ROOM_OVERRIDE)} overrides"
-          + (f" -> {sorted(set(ROOMS_OVERRIDDEN))}" if ROOMS_OVERRIDDEN else ""))
+    print(f"  unreferenced affiliations dropped: {len(set(AFFILIATIONS_PRUNED))} entries"
+          + (f" -> {sorted(set(AFFILIATIONS_PRUNED))}" if AFFILIATIONS_PRUNED else ""))
+    if AFF_MAPPING_SUSPECT:
+        print(f"  WARNING author-to-affiliation mapping damaged in source, kept "
+              f"as supplied: {len(set(AFF_MAPPING_SUSPECT))}")
+        for s in sorted(set(AFF_MAPPING_SUSPECT)):
+            print(f"      {s}")
     if truncated:
         print(f"  WARNING still-truncated abstracts: {truncated}")
     else:

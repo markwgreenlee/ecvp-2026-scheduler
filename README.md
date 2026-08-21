@@ -202,6 +202,11 @@ Each entry in `assets/ecvp-data.json` has: `id`, `kind` (`keynote` / `symposium`
 
 ## Version History
 
+**v1.3.8** (2026-08-21)
+- **The organisers' final talks export is in, and it confirms the room correction.** Their 2026-08-21 file puts `T506`, `T361`, `T327` and `T397` in Bayview Suite at source — exactly what v1.3.7 corrected — so `ROOM_OVERRIDE` reported itself redundant and has been removed. Adopting the export changed the built data not at all: byte-identical. The missing closing quote on `T74` is fixed too, so the file needs no repair on import and nothing in the source is hand-edited any more
+- **Affiliations no author is attached to are no longer shown.** Four entries listed an institution with nothing pointing at it, usually a co-author who moved on: `M2PM1`, `M6PM4`, `M7AM9` and `T3AM2`. Numbering is left alone rather than closed up, so the superscripts beside the authors still match the list
+- **Six records are deliberately left as supplied**, because their author-to-affiliation mapping is damaged at source and "unreferenced" cannot be determined. `M2PM7`, `T2AM9`, `305` and `96` have a lost comma inside `aff` — `[1,2]` serialised as the float `[1.2]` — so an author attached to two institutions reads as attached to one. `96` is the sharp case: on the truncated reading its third affiliation looks unused, and pruning would have deleted a real one. `M6PM9` cites affiliation 9 of 8, and `W4PM1` cites 0. All six are reported to the organisers and named in the validation report on every run
+
 **v1.3.7** (2026-08-20)
 - **The CPC @ ECVP symposium is now all in one room.** The export put its opening talk (`T387`, Graf, Thursday 14:00) in Bayview Suite and the other four in Purbeck Lounge — where the *Spatial Vision* session was already running 14:00–15:15. The four are corrected to Bayview Suite, which was otherwise empty between 11:45 and 17:00
 - **This was the last room double-booking in the programme**, and the check now reports zero. It also split the symposium into two blocks in the schedule view, since talks are grouped by `(date, session, room)`; the five now list contiguously
