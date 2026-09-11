@@ -204,8 +204,12 @@ What the config has to get right, learned from the other two datasets:
   `symposium_overview` reads as *Symposium overviews* rather than as a raw field value.
 - **`cityName`** is shown beside the clock in the Now tab, so no one is told the time in a city
   they are not in.
-- **`blockKindAlias`** folds a kind into another's session block. IMRF carries a separate
-  `symposium_overview` record per symposium, which without it lists every symposium twice.
+- **`kindAlias`** folds a kind into another everywhere: no filter chip of its own, matched by its
+  target's chip, and its entries join the target's session block. IMRF carries a separate
+  `symposium_overview` record per symposium — without this it gets a chip nobody wants and every
+  symposium is listed twice in the live view. Cards keep their own badge, so an overview still
+  reads as one, and it sorts first within its symposium because the tie-break keeps programme
+  order.
 - **`posterSessionName`** decides how poster topic lines collapse. ECVP titles are
   `Poster Session 1 · Attention`, so the topic is dropped. VSS titles carry no session prefix, so it
   returns a constant and posters group by hall instead — 15 blocks rather than 107.
