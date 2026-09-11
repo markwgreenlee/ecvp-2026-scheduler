@@ -33,6 +33,37 @@ The app installs as a Progressive Web App (PWA) — it opens full-screen like a 
 3. Tap **Add to Home Screen** (or **Install app**)
 4. Tap **Add** — the app icon appears on your home screen
 
+### During the conference
+
+The **Now** tab answers "where do I need to be". It lists every session running at this moment — keynote, talk session, symposium or poster session — with the room, the presentation currently on, and a star against anything in your schedule. Between sessions it counts down to what's next, so at the end of a coffee break it tells you how long you have and where to go.
+
+Times are reckoned in Bournemouth time, so the tab is right even if your phone's clock is still on the timezone you flew in from.
+
+### Getting reminded
+
+Two things nudge you, and it's worth knowing which is which:
+
+- **Calendar reminders** work with the app closed. Pick a lead time under **Settings → Session Reminders** (default 10 minutes), then export from the Schedule tab. On an iPhone, iPad or Mac the first button reads **Apple Calendar**; elsewhere it reads **Calendar file (.ics)**. Either way it hands over your whole schedule in one step, with an alarm on every event — choose **Add All** when Calendar opens. Your phone does the alerting from then on, offline and in the background.
+  Re-exporting later **updates** those events rather than duplicating them, because each carries a stable identifier. So add more talks, export again, and your calendar simply catches up.
+- **The in-app bar** appears at the top when one of your picks is about to start, but only while the app is open.
+
+> **Why the app can't text you or buzz your phone by itself.** SMS needs a server and your phone number — this app has neither, and collecting numbers would make it something quite different. And a web app cannot schedule a notification for later: there's no such browser API, and a push would need a server awake at the right minute to send it. Handing the reminder to your calendar is what gets an alert to a pocketed phone without any of that.
+
+### Move your schedule to another device
+
+Build your schedule on a laptop, then carry it to your phone — no account, no file, no cable.
+
+1. On the **laptop**, open **Settings** in the app. Under *Send this schedule*, a QR code appears
+2. On the **phone**, open the app, go to **Settings**, and tap **Scan a code**
+3. Allow camera access, then point the phone at the laptop screen
+4. The app asks whether to **Merge** (keep what's there and add the rest) or **Replace** (make this device match)
+
+Scanning from *inside* the app matters: the schedule then lands in the app you scanned from, including when the app lives on your iPhone's Home Screen. You can also point the phone's own camera app at the code, but on iPhone that opens the link in Safari, which does not always share storage with a Home Screen app.
+
+The code holds only the list of presentations you picked — nothing is uploaded, and no server sees it. It works the same way for handing your picks to a colleague. Schedules of up to about 400 presentations fit in a single code.
+
+> **If the camera won't work:** the scanner falls back to a box where you can paste the link, which is shown as text under the QR code on the sending device. Camera access needs a secure connection — that's automatic on the published site.
+
 > **Beta:** This is a community-built tool. Data is sourced from the official ECVP 2026 online programme; some inaccuracies may remain. Feedback and corrections welcome — open a [GitHub issue](https://github.com/markwgreenlee/ecvp-2026-scheduler/issues) or email markwgreenlee@gmail.com.
 
 ---
@@ -55,6 +86,24 @@ Then close and reopen the Calendar app.
 
 > **The programme is now complete.** Every one of the 614 presentations has a title and an abstract, following the organisers' 2026-08-08 corrections.
 
+### The Now tab shows the wrong time
+
+Times come from the device clock, converted to Bournemouth time. If the tab looks wrong, the device clock itself is wrong — check that automatic date and time is on (see *Calendar times are wrong* above).
+
+### I'm not getting reminders
+
+- Reminders ride on calendar events, so they only exist for presentations you actually exported. Export again after changing the lead time — existing calendar events keep the alarm they were created with
+- On the web, the **Apple Calendar** / **Calendar file** (`.ics`) button is the one that carries alarms. Google's event-edit page cannot accept a reminder through a link, so events added that way use whatever default your Google calendar applies
+- On an iPhone the button opens the share sheet; pick **Calendar**, or save the file and tap it. If nothing appears to happen in a Home Screen install, open the app in Safari and export from there
+- The in-app bar only appears while the app is open. Nothing the app itself can do will alert a phone that's locked in a pocket — that's what the calendar alarm is for
+
+### A shared schedule didn't import
+
+- The link must come from this app. A link from the VSS or IMRF scheduler is rejected, by design
+- Links are one-shot per page load: the app clears the code from the address bar once it has read it, so reloading won't prompt again. Scan the code again
+- Use **Settings → Scan a code** inside the app rather than the phone's camera app. Scanning from the camera app opens Safari, and on iPhone a Home Screen app may not share storage with Safari
+- If the camera is blocked, iOS grants it per-site: **Settings → Apps → Safari → Camera**. The scanner also accepts the link pasted as text
+
 ### Can't find presentations
 
 - Try shorter search terms (e.g., "motion" instead of "motion perception")
@@ -72,7 +121,11 @@ Then close and reopen the Calendar app.
 - Filter by day (Sun–Thu) and type (Keynote / Symposium / Talk / Poster / Social)
 - **Tap any card** to read the full abstract, authors, and session details in a pop-up sheet
 - Build a personal schedule — add/remove directly from the detail sheet
+- **Your schedule is a day-by-day itinerary**, ordered by day and start time, with the same cards, day/type filters and tap-for-abstract as Search. Filter to a single day and the calendar export covers just that day
 - Export to **Google Calendar** (opens in browser); the native iOS build can also add events directly to **Apple Calendar**
+- **What's on now** — a live tab showing every session running at this moment with its room, the presentation currently on, and your own picks starred; counts down to the next session during breaks. Reckoned in conference time, not the phone's timezone
+- **Apple Calendar from the web app** — one button hands your whole schedule to Apple Calendar (or Outlook, or any calendar app) as a single `.ics`, with a reminder on every event so your phone alerts you with the app closed. Re-exporting updates events instead of duplicating them
+- **Move your schedule between devices by QR code** — Settings shows a code encoding your picks, and a built-in scanner reads one from another screen. Scanning inside the app means the schedule lands in the app, Home Screen installs included. Works for sharing with a colleague too
 - Persistent schedule — survives app restarts
 - Works offline after first load
 
@@ -119,6 +172,92 @@ The workarounds are retained but dormant, because these exports have regressed b
 - `resolve_abstract()` does **not** treat a trailing `\` as proof of truncation. One abstract regained its full text while keeping the stray backslash, so the backslash is weighed against the recovered copy: backfill only if that copy is materially longer, otherwise strip the backslash and keep the source text.
 
 The organisers' current export emits each abstract as a single block, losing the paragraph structure earlier versions carried. `restore_paragraphs()` puts it back for the 9 affected abstracts, taking the structure from the recovery copy while keeping the organisers' wording: the two texts are aligned on their letters and digits alone, so differences in quotes, dashes or spacing are irrelevant, and the function refuses to act unless the spelling matches exactly. It inserts whitespace and nothing else, and verifies that before returning — the diff against the previous release is 9 whitespace-only changes and zero text changes.
+
+### What's on now, and session blocks
+
+`src/utils/conferenceTime.js` converts the device clock into conference-local time with
+`Intl.DateTimeFormat` and a `Europe/London` timezone, falling back to a fixed +01:00 offset if the
+platform cannot do timezone-aware formatting. Everything time-related reads from it, so an attendee
+whose phone never updated its timezone still sees the right thing.
+
+`src/utils/blocks.js` groups the programme into the blocks a person actually walks to.
+Keynotes, socials and poster sessions carry a `session_end` in the data; **talk and symposium
+sessions do not**, so their end is the last talk plus one 15-minute slot. That reproduces the real
+timetable (talks 10:30–12:00, 14:00–15:30, 17:00–18:30; posters 09:00–10:30 and 15:30–17:00) and
+correctly makes the shorter symposia finish early. Poster sessions collapse their seven topic lines
+into one block, since they are one place at one time.
+
+If a future export starts supplying `session_end` for talks, the derivation steps aside
+automatically — a declared end always wins.
+
+### Reminders
+
+There is no server, so there is no push. A PWA cannot schedule a local notification for later
+either: the Notification Triggers proposal was never shipped, and Web Push requires a server awake
+at the moment of delivery. Reminders are therefore delegated to the operating system's calendar:
+
+- Native build — `expo-calendar` events are created with `alarms: [{ relativeOffset: -minutes }]`.
+- Web — `src/utils/calendar.js` builds an `.ics` with a `VALARM` per event. Google's event-edit URL
+  has no reminder parameter, which is why the calendar file exists at all; it also adds the whole
+  schedule in one step instead of one event at a time. **This is the Apple Calendar path for the
+  PWA** — no web API writes to Apple Calendar directly — so on Apple platforms the button is
+  labelled accordingly (`src/utils/platform.js`).
+
+Getting the file to iOS is a fallback chain, not a single call, because no one mechanism is
+dependable there and downloads are least dependable of all inside a Home Screen install:
+
+1. `navigator.share({ files })` — the share sheet, which does work when installed. Tried only on
+   iOS, so desktops still get a plain download rather than a surprise share dialog.
+2. An `<a download>` click on a blob URL — correct everywhere on desktop.
+3. `window.open` on the blob, letting the OS decide.
+
+Only the first can be feature-detected, so steps 2 and 3 are a chain rather than a retry after a
+detected failure. A user *cancelling* the share sheet (`AbortError`) stops there and does not fall
+through — that is a decision, not a failure.
+
+Event UIDs are `<id>@ecvp-2026-scheduler` and therefore stable across exports, so a second import
+updates the existing events instead of duplicating them. The Google flow has no such property,
+which is why it carries its own `googleExportedIds` bookkeeping.
+
+The `.ics` writer folds content lines at 75 **octets**, not characters, and never splits a
+multi-byte character — 164 of the 614 entries contain non-ASCII text, and a character-based fold
+silently produces over-long lines that some calendar apps reject.
+
+### Sharing a schedule between devices
+
+A schedule is shared as the app's own URL with the selection in the fragment:
+
+```
+https://markwgreenlee.github.io/ecvp-2026-scheduler/#s=ecvp26.1.KN1,M1AM9,T131,…
+```
+
+`ecvp26` tags the conference and `1` the format, so a link made by the VSS or IMRF scheduler is
+rejected with a message instead of being half-read. The payload is the list of ids — board codes
+for posters — which means a shared link picks up corrected titles, times and abstracts on the
+receiving device rather than carrying a stale copy of the programme. Ids that no longer exist are
+reported in the import prompt and skipped.
+
+The **fragment** matters: fragments are never sent to the server and never enter the service
+worker's cache keys, so a shared schedule stays between the two devices. The app reads it on load,
+clears it from the address bar (so a reload doesn't re-prompt), and holds the selection until the
+user chooses Merge or Replace.
+
+QR rendering uses `qrcode-generator` — pure JavaScript, no dependencies of its own, no native
+module. On web the matrix is painted to a canvas and shown as a PNG; the native build draws it as
+views, collapsing runs of same-coloured modules. At error-correction level M a 50-presentation
+schedule is a 73×73 code, and about **408 presentations** is the ceiling for a single QR; past that
+the panel shows the link as text instead.
+
+Reading a code back is `src/components/ScheduleScanner.js`: `getUserMedia` with the rear camera into
+a `<video>`, frames drawn to an offscreen canvas at 800px wide and decoded with `jsqr` on each
+animation frame. It is **web only** — `Platform.OS !== 'web'` renders nothing, because a native
+scanner would mean adding `expo-camera`, a permission string and a rebuild for a build that is not
+currently distributed. The video needs `playsinline` and `muted` or iOS takes it fullscreen and
+refuses to autoplay. If the camera is denied or absent the same sheet offers a paste box.
+
+Every route in — opening a shared link, scanning, pasting — funnels through
+`buildPendingImport()`, so the confirmation sheet and the error messages are identical whichever
+way a schedule arrives.
 
 ### Regenerating the app icons
 

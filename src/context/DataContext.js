@@ -1,6 +1,11 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ecvpData from '../../assets/ecvp-data.json';
+import {
+  readShareFragment,
+  clearShareFragment,
+  buildPendingImport,
+} from '../utils/shareCode';
 
 export const DataContext = createContext();
 
@@ -32,6 +37,10 @@ export const DataProvider = ({ children }) => {
   const [allSessions, setAllSessions] = useState([]);
   const [selectedSessions, setSelectedSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  // A schedule shared from another device, waiting for the user to accept it.
+  const [pendingImport, setPendingImport] = useState(null);
+  // Lead time for calendar reminders, in minutes; 0 means no alarm.
+  const [reminderMinutes, setReminderMinutes] = useState(10);
 
   // Load data
   useEffect(() => {
@@ -44,6 +53,20 @@ export const DataProvider = ({ children }) => {
         const saved = await AsyncStorage.getItem('selectedSessions');
         if (saved) {
           setSelectedSessions(reconcileSaved(JSON.parse(saved), ecvpData));
+        }
+
+        // Arriving via a shared link: hold the selection for confirmation
+        // rather than applying it, since import can overwrite a schedule.
+        const savedReminder = await AsyncStorage.getItem('reminderMinutes');
+        if (savedReminder !== null) {
+          const parsed = Number(savedReminder);
+          if (!Number.isNaN(parsed)) setReminderMinutes(parsed);
+        }
+
+        const fragment = readShareFragment();
+        if (fragment) {
+          clearShareFragment();
+          setPendingImport(buildPendingImport(fragment, ecvpData));
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -78,6 +101,32 @@ export const DataProvider = ({ children }) => {
   const clearAll = useCallback(() => {
     setSelectedSessions([]);
   }, []);
+
+  // 'merge' keeps what is already there and adds what is new; 'replace' makes
+  // this device match the one the link came from.
+  const applyImport = useCallback((mode) => {
+    const incoming = pendingImport && pendingImport.sessions;
+    if (!incoming) return;
+    setSelectedSessions(current => {
+      if (mode === 'replace') return incoming;
+      const have = new Set(current.map(s => s.id));
+      return [...current, ...incoming.filter(s => !have.has(s.id))];
+    });
+    setPendingImport(null);
+  }, [pendingImport]);
+
+  const dismissImport = useCallback(() => setPendingImport(null), []);
+
+  const changeReminderMinutes = useCallback((minutes) => {
+    setReminderMinutes(minutes);
+    AsyncStorage.setItem('reminderMinutes', String(minutes)).catch(() => {});
+  }, []);
+
+  // A code scanned or pasted inside the app takes the same route as a shared
+  // link, so the confirmation and the error messages are identical either way.
+  const receiveSharePayload = useCallback((payload) => {
+    setPendingImport(buildPendingImport(payload, allSessions));
+  }, [allSessions]);
 
   const searchSessions = useCallback((query, day = '', kind = '') => {
     let results = allSessions;
@@ -118,6 +167,12 @@ export const DataProvider = ({ children }) => {
         removeSession,
         clearAll,
         searchSessions,
+        pendingImport,
+        applyImport,
+        dismissImport,
+        receiveSharePayload,
+        reminderMinutes,
+        changeReminderMinutes,
       }}
     >
       {children}

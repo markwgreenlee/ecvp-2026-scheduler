@@ -5,35 +5,16 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getEventTimes, eventTitle, buildIcs } from '../utils/calendar';
+import { isIOS, isApple } from '../utils/platform';
 
 const GOOGLE_EXPORTED_KEY = 'googleExportedIds';
 
 const Calendar = Platform.OS !== 'web' ? require('expo-calendar') : null;
 
-const toTitleCase = (str) =>
-  str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-
 const pad2 = (n) => String(n).padStart(2, '0');
 
-// Returns [startH, startM, endH, endM] for a session. Keynotes (60 min) and
-// social events (full evening block) use their session_end; everything else is
-// a 15-minute slot.
-const FULL_BLOCK_KINDS = ['social', 'keynote'];
-const getEventTimes = (session) => {
-  const startStr = session.time || session.session_start || '09:00';
-  const [sh, sm] = startStr.split(':').map(Number);
-  let eh, em;
-  if (FULL_BLOCK_KINDS.includes(session.kind) && session.session_end) {
-    [eh, em] = session.session_end.split(':').map(Number);
-  } else {
-    const tot = sh * 60 + sm + 15;
-    eh = Math.floor(tot / 60);
-    em = tot % 60;
-  }
-  return [sh, sm, eh, em];
-};
-
-const ExportButton = ({ sessions }) => {
+const ExportButton = ({ sessions, reminderMinutes = 0 }) => {
   const [googleIndex, setGoogleIndex] = useState(null); // null = modal hidden
   const [exportQueue, setExportQueue] = useState([]);
   const [dupWarning, setDupWarning] = useState(null); // { dupeCount, freshCount }
@@ -54,7 +35,7 @@ const ExportButton = ({ sessions }) => {
     const authors = authorsString(session);
     const [startDateTime, endDateTime] = getStartEnd(session);
     const eventParams = new URLSearchParams({
-      text: session.room ? `[${toTitleCase(session.room)}] ${session.title}` : session.title,
+      text: eventTitle(session),
       dates: `${startDateTime}/${endDateTime}`,
       ctz: 'Europe/London',
       location: session.room || '',
@@ -151,10 +132,7 @@ const ExportButton = ({ sessions }) => {
           new Date(`${date}T00:00:00+01:00`),
           new Date(`${date}T23:59:59+01:00`)
         );
-        const expectedTitle = session.room
-          ? `[${toTitleCase(session.room)}] ${session.title}`
-          : session.title;
-        if (events.some(e => e.title === expectedTitle)) duplicateIds.add(session.id);
+        if (events.some(e => e.title === eventTitle(session))) duplicateIds.add(session.id);
       }
 
       // If duplicates exist, ask what to do
@@ -186,13 +164,15 @@ const ExportButton = ({ sessions }) => {
         const startDate = new Date(`${date}T${pad2(startH)}:${pad2(startM)}:00+01:00`);
         const endDate   = new Date(`${date}T${pad2(endH)}:${pad2(endM)}:00+01:00`);
         await Calendar.createEventAsync(defaultCal.id, {
-          title: session.room ? `[${toTitleCase(session.room)}] ${session.title}` : session.title,
+          title: eventTitle(session),
           startDate,
           endDate,
           location: session.room || '',
           notes: `Authors: ${authors}\n\nSession: ${session.session_title || ''}\n\nAbstract: ${session.abstract || ''}`,
           timeZone: 'Europe/London',
-          alarms: [],
+          // The OS delivers this even with the app closed — the only reminder
+          // here that reaches a pocketed phone.
+          alarms: reminderMinutes > 0 ? [{ relativeOffset: -reminderMinutes }] : [],
         });
         created++;
       }
@@ -206,14 +186,85 @@ const ExportButton = ({ sessions }) => {
     }
   };
 
+  // Google's event-edit URL cannot carry a reminder, and adds one event at a
+  // time. A calendar file takes the whole schedule at once, alarms included,
+  // and Apple Calendar is what opens it on an iPhone.
+  //
+  // Three delivery routes, tried in order, because no single one is dependable
+  // on iOS — downloads in particular are unreliable inside a Home Screen PWA,
+  // which is exactly where attendees will be:
+  //   1. the share sheet, the one route that does work when installed;
+  //   2. a normal download, which is right on every desktop;
+  //   3. opening the file and letting the OS decide.
+  // Only the first can be feature-detected, so the rest are a fallback chain
+  // rather than a retry on failure.
+  const ICS_NAME = 'ecvp-2026-schedule.ics';
+
+  const addToCalendar = async () => {
+    if (sessions.length === 0) return;
+    const text = buildIcs(sessions, reminderMinutes);
+
+    if (isIOS() && typeof File !== 'undefined' && navigator.canShare) {
+      try {
+        const file = new File([text], ICS_NAME, { type: 'text/calendar' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'ECVP 2026 schedule' });
+          return;
+        }
+      } catch (err) {
+        // The user closing the share sheet is a decision, not a failure.
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+
+    let url;
+    try {
+      url = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }));
+    } catch (_) {
+      return;
+    }
+
+    try {
+      const link = document.createElement('a');
+      if ('download' in link) {
+        link.href = url;
+        link.download = ICS_NAME;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        window.open(url, '_blank');
+      }
+    } catch (_) {
+      try { window.open(url, '_blank'); } catch (_) {}
+    }
+
+    // Long enough for the browser to have taken the data.
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 30000);
+  };
+
   const isLast = googleIndex !== null && googleIndex === exportQueue.length - 1;
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={exportToGoogle}>
-        <Icon name="calendar" size={18} color="#fff" />
-        <Text style={styles.buttonText}>Google Calendar</Text>
-      </TouchableOpacity>
+      {Platform.OS === 'web' && (
+        <>
+          <TouchableOpacity style={[styles.button, styles.icsButton]} onPress={addToCalendar}>
+            <Icon name={isApple() ? 'apple' : 'calendar-clock'} size={18} color="#fff" />
+            <Text style={styles.buttonText}>
+              {isApple() ? 'Apple Calendar' : 'Calendar file (.ics)'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.icsNote}>
+            {isApple()
+              ? `Adds all ${sessions.length} at once — choose Add All when your calendar opens.`
+              : `Adds all ${sessions.length} at once. Opens in Apple Calendar, Outlook or any calendar app.`}
+            {reminderMinutes > 0 ? ` Each carries a ${reminderMinutes}-minute reminder.` : ''}
+            {' '}Re-importing later updates these events instead of duplicating them.
+          </Text>
+        </>
+      )}
 
       {Platform.OS !== 'web' && (
         <TouchableOpacity style={[styles.button, styles.appleButton]} onPress={exportToApple}>
@@ -221,6 +272,11 @@ const ExportButton = ({ sessions }) => {
           <Text style={styles.buttonText}>Apple Calendar</Text>
         </TouchableOpacity>
       )}
+
+      <TouchableOpacity style={[styles.button, styles.googleButton]} onPress={exportToGoogle}>
+        <Icon name="calendar" size={18} color="#fff" />
+        <Text style={styles.buttonText}>Google Calendar</Text>
+      </TouchableOpacity>
 
       {/* Duplicate warning modal */}
       <Modal
@@ -309,6 +365,14 @@ const styles = StyleSheet.create({
   },
   googleButton: { backgroundColor: '#4285f4' },
   appleButton:  { backgroundColor: '#000' },
+  icsButton:    { backgroundColor: '#2f855a' },
+  icsNote: {
+    fontSize: 10,
+    color: '#777',
+    lineHeight: 14,
+    textAlign: 'center',
+    marginTop: -4,
+  },
   buttonText:   { color: '#fff', fontWeight: '600', fontSize: 14 },
 
   overlay: {
