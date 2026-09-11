@@ -67,6 +67,12 @@ const conference = {
   // Makes event UIDs stable and unique, so re-importing updates events rather
   // than duplicating them, and two apps' events never collide.
   uidDomain: 'ecvp-2026-scheduler',
+
+  // --- Local storage -------------------------------------------------------
+  // All three apps are served from markwgreenlee.github.io, so they share one
+  // localStorage. Without a prefix they overwrite each other's schedules:
+  // opening VSS would wipe an ECVP schedule and vice versa.
+  storagePrefix: 'ecvp-2026',
 };
 
 export default conference;
