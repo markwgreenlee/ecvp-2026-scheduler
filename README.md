@@ -173,6 +173,38 @@ The workarounds are retained but dormant, because these exports have regressed b
 
 The organisers' current export emits each abstract as a single block, losing the paragraph structure earlier versions carried. `restore_paragraphs()` puts it back for the 9 affected abstracts, taking the structure from the recovery copy while keeping the organisers' wording: the two texts are aligned on their letters and digits alone, so differences in quotes, dashes or spacing are irrelevant, and the function refuses to act unless the spelling matches exactly. It inserts whitespace and nothing else, and verifies that before returning — the diff against the previous release is 9 whitespace-only changes and zero text changes.
 
+### Porting to the VSS and IMRF apps
+
+All three schedulers share this codebase. Everything conference-specific lives in
+`src/config/conference.js` — share tag, timezone, presentation-type labels, poster grouping,
+calendar identifiers — so the modules under `src/utils/` are byte-identical across the three
+repositories. Porting a fix means copying the utils and editing that one file.
+
+What the config has to get right, learned from the other two datasets:
+
+- **`timeZone`** drives both the live clock and the UTC stamps in the `.ics`. The conversion is
+  derived from the zone rather than a fixed offset, so it stays correct in London, Florida or
+  Genova and across a daylight-saving change. `fallbackUtcOffsetMinutes` applies only where the
+  platform has no timezone-aware `Intl`.
+- **`shareTag`** must be unique. It is what makes a VSS link fail cleanly in the IMRF app.
+- **`kindLabels`** needs an entry for any irregular plural. Unlisted kinds are humanised, so IMRF's
+  `symposium_overview` reads as *Symposium overviews* rather than as a raw field value.
+- **`cityName`** is shown beside the clock in the Now tab, so no one is told the time in a city
+  they are not in.
+- **`blockKindAlias`** folds a kind into another's session block. IMRF carries a separate
+  `symposium_overview` record per symposium, which without it lists every symposium twice.
+- **`posterSessionName`** decides how poster topic lines collapse. ECVP titles are
+  `Poster Session 1 · Attention`, so the topic is dropped. VSS titles carry no session prefix, so it
+  returns a constant and posters group by hall instead — 15 blocks rather than 107.
+
+Two things the other datasets exposed that the shared code now handles:
+
+- **Not every programme times each talk.** All of IMRF's sessions, and six of VSS's, give every talk
+  the session's start time. `hasRunningOrder()` detects this and the Now tab shows
+  *"5 talks in this session"* instead of naming a talk it cannot know is on.
+- **Poster blocks are keyed by room.** VSS runs two halls at the same hour; without the room they
+  would merge into one block wearing whichever room sorted first.
+
 ### What's on now, and session blocks
 
 `src/utils/conferenceTime.js` converts the device clock into conference-local time with

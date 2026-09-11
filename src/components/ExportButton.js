@@ -7,6 +7,8 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getEventTimes, eventTitle, buildIcs } from '../utils/calendar';
 import { isIOS, isApple } from '../utils/platform';
+import conference from '../config/conference';
+import { zonedTimeToUtc } from '../utils/conferenceTime';
 
 const GOOGLE_EXPORTED_KEY = 'googleExportedIds';
 
@@ -37,7 +39,7 @@ const ExportButton = ({ sessions, reminderMinutes = 0 }) => {
     const eventParams = new URLSearchParams({
       text: eventTitle(session),
       dates: `${startDateTime}/${endDateTime}`,
-      ctz: 'Europe/London',
+      ctz: conference.timeZone,
       location: session.room || '',
       details: `Authors: ${authors}\n\nAbstract: ${session.abstract || ''}`,
     });
@@ -126,11 +128,11 @@ const ExportButton = ({ sessions, reminderMinutes = 0 }) => {
       const allCalIds = calendars.filter(c => c.allowsModifications).map(c => c.id);
       const duplicateIds = new Set();
       for (const session of sessions) {
-        const date = session.date || '2026-08-24';
+        const date = session.date || conference.fallbackDate;
         const events = await Calendar.getEventsAsync(
           allCalIds,
-          new Date(`${date}T00:00:00+01:00`),
-          new Date(`${date}T23:59:59+01:00`)
+          zonedTimeToUtc(date, '00:00'),
+          zonedTimeToUtc(date, '23:59')
         );
         if (events.some(e => e.title === eventTitle(session))) duplicateIds.add(session.id);
       }
@@ -158,18 +160,18 @@ const ExportButton = ({ sessions, reminderMinutes = 0 }) => {
       for (const session of sessions) {
         if (skipDuplicates && duplicateIds.has(session.id)) continue;
         const authors = authorsString(session);
-        const date = session.date || '2026-08-24';
-        // Social events span their full evening block; everything else is 15 minutes.
+        const date = session.date || conference.fallbackDate;
+        // Social events span their full evening block; everything else is one slot.
         const [startH, startM, endH, endM] = getEventTimes(session);
-        const startDate = new Date(`${date}T${pad2(startH)}:${pad2(startM)}:00+01:00`);
-        const endDate   = new Date(`${date}T${pad2(endH)}:${pad2(endM)}:00+01:00`);
+        const startDate = zonedTimeToUtc(date, `${pad2(startH)}:${pad2(startM)}`);
+        const endDate   = zonedTimeToUtc(date, `${pad2(endH)}:${pad2(endM)}`);
         await Calendar.createEventAsync(defaultCal.id, {
           title: eventTitle(session),
           startDate,
           endDate,
           location: session.room || '',
           notes: `Authors: ${authors}\n\nSession: ${session.session_title || ''}\n\nAbstract: ${session.abstract || ''}`,
-          timeZone: 'Europe/London',
+          timeZone: conference.timeZone,
           // The OS delivers this even with the app closed — the only reminder
           // here that reaches a pocketed phone.
           alarms: reminderMinutes > 0 ? [{ relativeOffset: -reminderMinutes }] : [],
@@ -198,7 +200,7 @@ const ExportButton = ({ sessions, reminderMinutes = 0 }) => {
   //   3. opening the file and letting the OS decide.
   // Only the first can be feature-detected, so the rest are a fallback chain
   // rather than a retry on failure.
-  const ICS_NAME = 'ecvp-2026-schedule.ics';
+  const ICS_NAME = conference.icsFileName;
 
   const addToCalendar = async () => {
     if (sessions.length === 0) return;

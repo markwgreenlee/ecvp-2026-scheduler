@@ -1,13 +1,11 @@
 // Shared between the Google, Apple and .ics exports so the three agree on when
 // an event starts and how long it runs.
-
-// The whole programme sits in British Summer Time; the rest of the app makes
-// the same assumption when it builds Date objects for the calendar.
-export const CONFERENCE_UTC_OFFSET = '+01:00';
+import conference from '../config/conference';
+import { zonedTimeToUtc } from './conferenceTime';
 
 // Keynotes and socials run for their whole advertised block; everything else
-// is a 15-minute slot.
-const FULL_BLOCK_KINDS = ['social', 'keynote'];
+// is one presentation slot.
+const FULL_BLOCK_KINDS = conference.fullBlockKinds;
 
 export const getEventTimes = (session) => {
   const startStr = session.time || session.session_start || '09:00';
@@ -16,7 +14,7 @@ export const getEventTimes = (session) => {
   if (FULL_BLOCK_KINDS.includes(session.kind) && session.session_end) {
     [eh, em] = session.session_end.split(':').map(Number);
   } else {
-    const tot = sh * 60 + sm + 15;
+    const tot = sh * 60 + sm + conference.talkMinutes;
     eh = Math.floor(tot / 60);
     em = tot % 60;
   }
@@ -31,8 +29,12 @@ export const toTitleCase = (str) =>
 export const eventTitle = (session) =>
   session.room ? `[${toTitleCase(session.room)}] ${session.title}` : session.title;
 
+// Emitted as UTC, derived from the conference's timezone rather than a fixed
+// offset, so the file is correct wherever the conference is held and across a
+// daylight-saving change.
 const stamp = (date, h, m) => {
-  const d = new Date(`${date}T${pad2(h)}:${pad2(m)}:00${CONFERENCE_UTC_OFFSET}`);
+  const d = zonedTimeToUtc(date, `${pad2(h)}:${pad2(m)}`);
+  if (!d) return '';
   return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 };
 
@@ -81,18 +83,18 @@ export const buildIcs = (sessions, reminderMinutes) => {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//ECVP 2026 Schedule Organizer//EN',
+    `PRODID:${conference.icsProductId}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
 
   for (const s of sessions) {
-    const date = s.date || '2026-08-24';
+    const date = s.date || conference.fallbackDate;
     const [sh, sm, eh, em] = getEventTimes(s);
     const authors = Array.isArray(s.authors) ? s.authors.join(', ') : (s.authors || '');
     lines.push(
       'BEGIN:VEVENT',
-      fold(`UID:${s.id}@ecvp-2026-scheduler`),
+      fold(`UID:${s.id}@${conference.uidDomain}`),
       `DTSTAMP:${now}`,
       `DTSTART:${stamp(date, sh, sm)}`,
       `DTEND:${stamp(date, eh, em)}`,

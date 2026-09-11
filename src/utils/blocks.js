@@ -1,4 +1,5 @@
 import { toMinutes, fromMinutes, gapInMinutes } from './conferenceTime';
+import conference from '../config/conference';
 
 // "What's on now" works in blocks, not individual presentations: you walk to a
 // room for a session, not for one 15-minute talk.
@@ -7,22 +8,31 @@ import { toMinutes, fromMinutes, gapInMinutes } from './conferenceTime';
 // and symposium sessions do not, so a block's end is its last talk plus one
 // slot — which reproduces the real timetable (10:30-12:00, 14:00-15:30,
 // 17:00-18:30) and correctly makes the shorter symposia end early.
-export const TALK_MINUTES = 15;
+export const TALK_MINUTES = conference.talkMinutes;
 
 const startOf = (s) => s.time || s.session_start || '';
 
-// Posters name a topic line per session ("Poster Session 1 · Attention"); for a
-// live view those seven lines are one place to walk to, so collapse them.
-const posterSessionName = (title) => (title || '').split(' · ')[0] || 'Poster Session';
+// How a poster block is named, and therefore how the topic lines of one
+// session collapse together. Conference-specific: some programmes prefix the
+// session, others give only the topic.
+const posterSessionName = conference.posterSessionName;
+
+// Some programmes carry a separate record describing a session as a whole.
+// It belongs in that session's block, not a block of its own.
+const blockKind = (s) => (conference.blockKindAlias || {})[s.kind] || s.kind;
 
 const blockKeyFor = (s) => {
   if (s.kind === 'poster') {
-    return `${s.date}|poster|${s.session_start}|${posterSessionName(s.session_title)}`;
+    // Room belongs in the key: some conferences run two poster halls at the
+    // same hour, and without it they would merge into one block wearing
+    // whichever room happened to come first.
+    return `${s.date}|poster|${s.session_start}|${s.room || ''}|${posterSessionName(s.session_title)}`;
   }
-  if (s.kind === 'talk' || s.kind === 'symposium') {
-    return `${s.date}|${s.kind}|${s.room || ''}|${s.session_title || ''}`;
+  const kind = blockKind(s);
+  if (kind === 'talk' || kind === 'symposium') {
+    return `${s.date}|${kind}|${s.room || ''}|${s.session_title || ''}`;
   }
-  return `${s.date}|${s.kind}|${startOf(s)}|${s.session_title || s.title}`;
+  return `${s.date}|${kind}|${startOf(s)}|${s.session_title || s.title}`;
 };
 
 export const buildBlocks = (sessions) => {
@@ -33,11 +43,13 @@ export const buildBlocks = (sessions) => {
     if (!byKey.has(key)) {
       byKey.set(key, {
         key,
-        kind: s.kind,
+        kind: blockKind(s),
         date: s.date,
         day: s.day,
         room: s.room || '',
-        title: s.kind === 'poster' ? posterSessionName(s.session_title) : (s.session_title || s.title),
+        title: blockKind(s) === 'poster'
+          ? posterSessionName(s.session_title)
+          : (s.session_title || s.title),
         items: [],
       });
     }
@@ -74,10 +86,21 @@ export const buildBlocks = (sessions) => {
   return blocks;
 };
 
-// The presentation running at this moment inside a block. Poster sessions have
-// no running item — every poster is up for the whole session.
+// The presentation running at this moment inside a block.
+//
+// Returns null when the block cannot support the claim: poster sessions, where
+// everything is up for the whole session, and — importantly — sessions whose
+// presentations all share the session's start time. Some programmes give a
+// time per talk and some do not; guessing from a single shared time would name
+// the wrong talk for most of the session, which is worse than saying nothing.
+export const hasRunningOrder = (block) => {
+  if (block.kind === 'poster') return false;
+  const times = new Set(block.items.map(i => startOf(i)).filter(Boolean));
+  return times.size > 1;
+};
+
 export const currentItem = (block, minutes) => {
-  if (block.kind === 'poster') return null;
+  if (!hasRunningOrder(block)) return null;
   let found = null;
   for (const item of block.items) {
     const t = toMinutes(startOf(item));
