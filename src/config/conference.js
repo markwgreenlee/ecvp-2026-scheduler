@@ -56,10 +56,13 @@ const conference = {
   // dropped for the live view. Conferences whose poster titles carry no
   // session prefix should return the title unchanged.
   posterSessionName: (title) => (title || '').split(' · ')[0] || 'Poster session',
-  // Kinds that are really part of another kind's session block. IMRF carries a
-  // separate 'symposium_overview' record per symposium, which would otherwise
-  // list every symposium twice in the live view.
-  blockKindAlias: {},
+  // Kinds that are really part of another kind. An aliased kind gets no filter
+  // chip of its own and is matched by its target's chip, and its entries join
+  // the target's session block. IMRF carries a separate 'symposium_overview'
+  // record per symposium; without this it would get a chip nobody wants and
+  // list every symposium twice in the live view. Cards keep their own badge,
+  // so an overview still reads as one.
+  kindAlias: {},
 
   // --- Calendar export -----------------------------------------------------
   icsFileName: 'ecvp-2026-schedule.ics',
