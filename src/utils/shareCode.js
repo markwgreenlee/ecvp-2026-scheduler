@@ -6,8 +6,12 @@
 // sent to the server and never reach the service worker's cache keys, so a
 // shared schedule stays between the two devices involved.
 
-const CONFERENCE = 'ecvp26'; // VSS and IMRF set their own, so a link from one
-const FORMAT = '1';          // app is rejected by another rather than half-read.
+import conference from '../config/conference';
+
+// Each app sets its own tag, so a link from one is rejected by another rather
+// than half-read.
+const CONFERENCE = conference.shareTag;
+const FORMAT = '1';
 const PREFIX = 's=';
 
 export const encodeSelection = (sessions) =>
@@ -34,7 +38,7 @@ export const appBaseUrl = () => {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     return window.location.origin + window.location.pathname;
   }
-  return 'https://markwgreenlee.github.io/ecvp-2026-scheduler/';
+  return conference.shareBaseUrl;
 };
 
 export const readShareFragment = () => {

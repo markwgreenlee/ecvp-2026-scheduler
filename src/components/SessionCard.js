@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { kindName } from '../utils/filters';
 
 const SessionCard = ({ session, isSelected }) => {
   const authors = Array.isArray(session.authors)
@@ -12,14 +13,9 @@ const SessionCard = ({ session, isSelected }) => {
     ? (session.time_tbc ? `${baseTime} (TBC)` : baseTime)
     : '';
 
-  const KIND_LABELS = {
-    poster: 'Poster',
-    symposium: 'Symposium',
-    keynote: 'Keynote',
-    talk: 'Talk',
-    social: 'Social',
-  };
-  const kindLabel = KIND_LABELS[session.kind] || 'Talk';
+  // Shared with the filter chips, so a kind this build has never seen reads as
+  // itself rather than being mislabelled 'Talk'.
+  const kindLabel = kindName(session.kind);
 
   return (
     <View style={[styles.card, isSelected && styles.selectedCard]}>

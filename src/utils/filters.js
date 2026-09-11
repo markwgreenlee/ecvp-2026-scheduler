@@ -1,19 +1,31 @@
 // Day and type chips are derived from the data rather than hard-coded, so the
 // same screens work for VSS and IMRF, which run on different days and need not
 // carry every presentation type.
+import conference from '../config/conference';
 
-const KIND_ORDER = ['keynote', 'symposium', 'talk', 'poster', 'social'];
+const KIND_ORDER = conference.kindOrder;
+const KIND_LABELS = conference.kindLabels;
 
-const KIND_LABELS = {
-  keynote: 'Keynotes',
-  symposium: 'Symposia',
-  talk: 'Talks',
-  poster: 'Posters',
-  social: 'Social',
+// 'symposium_overview' -> 'Symposium overview'. Only reached for kinds the
+// config does not name, which is how an unexpected kind in a new export shows
+// up readably instead of as a raw field value.
+const humanise = (kind) => {
+  const words = String(kind).replace(/[_-]+/g, ' ').trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-export const kindLabel = (kind) =>
-  KIND_LABELS[kind] || kind.charAt(0).toUpperCase() + kind.slice(1) + 's';
+export const kindLabel = (kind) => {
+  const entry = KIND_LABELS[kind];
+  if (entry) return entry.many;
+  const one = humanise(kind);
+  return one.endsWith('s') ? one : `${one}s`;
+};
+
+// Singular form, for a card's badge rather than a filter chip.
+export const kindName = (kind) => {
+  const entry = KIND_LABELS[kind];
+  return entry ? entry.one : humanise(kind);
+};
 
 // Day names in calendar order, ordered by each day's ISO date rather than by a
 // fixed Sunday-first list.

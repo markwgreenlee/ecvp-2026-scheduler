@@ -6,18 +6,18 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { DataContext } from '../context/DataContext';
 import SessionDetailModal from '../components/SessionDetailModal';
 import { conferenceNow, formatGap, gapInMinutes } from '../utils/conferenceTime';
-import { buildBlocks, whatIsOn, currentItem } from '../utils/blocks';
+import { buildBlocks, whatIsOn, currentItem, hasRunningOrder } from '../utils/blocks';
+import { kindName } from '../utils/filters';
+import conference from '../config/conference';
 
 // The clock only needs to be right to the minute; a slow tick keeps a phone in
 // a pocket from doing needless work all week.
 const TICK_MS = 20000;
 
-const KIND_LABEL = {
-  keynote: 'Keynote',
-  symposium: 'Symposium',
-  talk: 'Talk session',
-  poster: 'Poster session',
-  social: 'Social',
+const blockKindLabel = (kind) => {
+  if (kind === 'talk') return 'Talk session';
+  if (kind === 'poster') return 'Poster session';
+  return kindName(kind);
 };
 
 const BlockCard = ({ block, minutes, selectedIds, onOpen, upcoming }) => {
@@ -27,12 +27,18 @@ const BlockCard = ({ block, minutes, selectedIds, onOpen, upcoming }) => {
     <View style={[styles.card, mine.length > 0 && styles.cardMine]}>
       <View style={styles.cardTop}>
         <Text style={styles.cardTime}>{block.start}–{block.end}</Text>
-        <Text style={styles.cardKind}>{KIND_LABEL[block.kind] || block.kind}</Text>
+        <Text style={styles.cardKind}>{blockKindLabel(block.kind)}</Text>
       </View>
 
-      <Text style={styles.cardTitle} numberOfLines={2}>
-        {mine.length > 0 ? '★ ' : ''}{block.title}
-      </Text>
+      {/* Where a conference gives poster sessions no name of their own, the
+          title repeats the kind label, so drop it. */}
+      {block.title && block.title.toLowerCase() !== blockKindLabel(block.kind).toLowerCase() ? (
+        <Text style={styles.cardTitle} numberOfLines={2}>
+          {mine.length > 0 ? '★ ' : ''}{block.title}
+        </Text>
+      ) : mine.length > 0 ? (
+        <Text style={styles.cardTitle}>★ In your schedule</Text>
+      ) : null}
 
       {block.room ? (
         <Text style={styles.cardRoom}>📍 {block.room}</Text>
@@ -51,9 +57,18 @@ const BlockCard = ({ block, minutes, selectedIds, onOpen, upcoming }) => {
         <Text style={styles.posterCount}>{block.items.length} posters on display</Text>
       ) : null}
 
+      {/* Some programmes time each talk and some only time the session. Where
+          there is no running order, say how much is in the room rather than
+          guessing which talk is on. */}
+      {!upcoming && block.kind !== 'poster' && !hasRunningOrder(block) && block.items.length > 1 ? (
+        <Text style={styles.posterCount}>
+          {block.items.length} {kindName(block.items[0].kind).toLowerCase()}s in this session
+        </Text>
+      ) : null}
+
       {mine.length > 0 ? (
         <Text style={styles.mineNote}>
-          {mine.length} in your schedule{block.kind === 'poster' && mine.length <= 4
+          {mine.length} in your schedule{block.kind === 'poster' && mine.length <= 8
             ? `: ${mine.map(m => m.id).join(', ')}`
             : ''}
         </Text>
@@ -102,8 +117,8 @@ const NowScreen = () => {
         </Text>
         <Text style={styles.headerClock}>
           {state.live.length > 0 || nextIsToday
-            ? `${state.live[0]?.day || nextDay || ''} ${now.time} · Bournemouth time`
-            : `${now.time} · Bournemouth time`}
+            ? `${state.live[0]?.day || nextDay || ''} ${now.time} · ${conference.cityName} time`
+            : `${now.time} · ${conference.cityName} time`}
         </Text>
       </View>
 

@@ -3,12 +3,12 @@
 // phone update it, should still be told the right thing — and the calendar
 // export already anchors to the same zone.
 
-export const CONFERENCE_TZ = 'Europe/London';
+import conference from '../config/conference';
 
-// Used only if the platform cannot do timezone-aware formatting. The whole
-// programme sits inside British Summer Time, and ExportButton makes the same
-// +01:00 assumption.
-const FALLBACK_OFFSET_MINUTES = 60;
+export const CONFERENCE_TZ = conference.timeZone;
+
+// Used only if the platform cannot do timezone-aware formatting.
+const FALLBACK_OFFSET_MINUTES = conference.fallbackUtcOffsetMinutes;
 
 let formatter;
 const getFormatter = () => {
@@ -48,6 +48,35 @@ export const conferenceNow = (instant = new Date()) => {
     time: iso.slice(11, 16),
     minutes: shifted.getUTCHours() * 60 + shifted.getUTCMinutes(),
   };
+};
+
+// The UTC instant for a wall-clock time in the conference's zone.
+//
+// Deriving this rather than assuming a fixed offset is what lets the same code
+// serve a conference in London, Florida or Genova, and keeps it correct across
+// a daylight-saving boundary. Guess that the wall time is UTC, see what that
+// instant actually reads as in the zone, and correct by the difference; a
+// second pass settles the case where the correction itself crosses a change.
+export const zonedTimeToUtc = (date, hhmm) => {
+  const target = Date.parse(`${date}T${hhmm}:00Z`);
+  if (Number.isNaN(target)) return null;
+
+  const fmt = getFormatter();
+  if (!fmt) return new Date(target - FALLBACK_OFFSET_MINUTES * 60000);
+
+  let instant = target;
+  for (let pass = 0; pass < 2; pass++) {
+    const parts = {};
+    for (const p of fmt.formatToParts(new Date(instant))) parts[p.type] = p.value;
+    const reads = Date.parse(
+      `${parts.year}-${parts.month}-${parts.day}T${String(Number(parts.hour) % 24).padStart(2, '0')}:${parts.minute}:00Z`
+    );
+    if (Number.isNaN(reads)) return new Date(target - FALLBACK_OFFSET_MINUTES * 60000);
+    const drift = target - reads;
+    if (drift === 0) break;
+    instant += drift;
+  }
+  return new Date(instant);
 };
 
 export const toMinutes = (hhmm) => {

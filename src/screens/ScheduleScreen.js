@@ -18,6 +18,8 @@ import SessionDetailModal from '../components/SessionDetailModal';
 import { sortChronologically, programmeOrder } from '../utils/sortSessions';
 import { daysInOrder, kindsInOrder, kindLabel, matchesFilters } from '../utils/filters';
 import { eventTitle } from '../utils/calendar';
+import { zonedTimeToUtc } from '../utils/conferenceTime';
+import conference from '../config/conference';
 
 const removeFromAppleCalendar = async (session) => {
   try {
@@ -26,9 +28,9 @@ const removeFromAppleCalendar = async (session) => {
     const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
     const ids = calendars.filter(c => c.allowsModifications).map(c => c.id);
     if (!ids.length) return;
-    const date = session.date || '2026-08-24';
-    const start = new Date(`${date}T00:00:00+01:00`);
-    const end   = new Date(`${date}T23:59:59+01:00`);
+    const date = session.date || conference.fallbackDate;
+    const start = zonedTimeToUtc(date, '00:00');
+    const end   = zonedTimeToUtc(date, '23:59');
     const events = await Calendar.getEventsAsync(ids, start, end);
     for (const ev of events.filter(e => e.title === eventTitle(session))) {
       await Calendar.deleteEventAsync(ev.id);
