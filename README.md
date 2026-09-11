@@ -173,6 +173,19 @@ The workarounds are retained but dormant, because these exports have regressed b
 
 The organisers' current export emits each abstract as a single block, losing the paragraph structure earlier versions carried. `restore_paragraphs()` puts it back for the 9 affected abstracts, taking the structure from the recovery copy while keeping the organisers' wording: the two texts are aligned on their letters and digits alone, so differences in quotes, dashes or spacing are irrelevant, and the function refuses to act unless the spelling matches exactly. It inserts whitespace and nothing else, and verifies that before returning — the diff against the previous release is 9 whitespace-only changes and zero text changes.
 
+### One origin, three apps
+
+All three schedulers are served from `markwgreenlee.github.io`, which means they share a single
+`localStorage`. They previously used identical keys (`selectedSessions`, `reminderMinutes`), so
+opening one app overwrote another's saved schedule — and because a saved schedule is reconciled
+against the current programme on load, a foreign schedule resolves to nothing and silently
+disappears.
+
+Every key is now namespaced with `conference.storagePrefix` via `src/utils/storage.js`. A schedule
+saved under the old bare key is still read once as a fallback and written back namespaced;
+reconciliation drops anything belonging to another conference. The old key is left in place so the
+sibling apps can do the same migration.
+
 ### Porting to the VSS and IMRF apps
 
 All three schedulers share this codebase. Everything conference-specific lives in
