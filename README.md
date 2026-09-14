@@ -120,6 +120,7 @@ Times come from the device clock, converted to Bournemouth time. If the tab look
 - **Author affiliations** for every talk and poster — authors shown with superscript numbers and a numbered institution list
 - Filter by day (Sun–Thu) and type (Keynote / Symposium / Talk / Poster / Social)
 - **Tap any card** to read the full abstract, authors, and session details in a pop-up sheet
+- **Tap an author's name** in that sheet to see everything else they are presenting, and jump straight to any of it
 - Build a personal schedule — add/remove directly from the detail sheet
 - **Your schedule is a day-by-day itinerary**, ordered by day and start time, with the same cards, day/type filters and tap-for-abstract as Search. Filter to a single day and the calendar export covers just that day
 - Export to **Google Calendar** (opens in browser); the native iOS build can also add events directly to **Apple Calendar**
@@ -221,6 +222,40 @@ Two things the other datasets exposed that the shared code now handles:
   *"5 talks in this session"* instead of naming a talk it cannot know is on.
 - **Poster blocks are keyed by room.** VSS runs two halls at the same hour; without the room they
   would merge into one block wearing whichever room sorted first.
+
+### Linking authors across the programme
+
+`src/utils/authors.js` answers one question: when are two author strings the same person? The
+programme records a name however each submission typed it, so one person genuinely appears several
+ways — in the 2026 data, *Mark Greenlee* twice and *Mark W. Greenlee* once, on three different
+abstracts.
+
+`authorKey()` therefore ignores case, accents, hyphenation, spacing and initials:
+`"Mark W. Greenlee"` and `"Mark Greenlee"` both reduce to `mark greenlee`. That also merges
+`Michael H. Herzog` with `Michael Herzog` and `Stéphanie Caharel` with `Stephanie Caharel`, while
+keeping `Li-Li Yeh` apart from `Lu-Chun Yeh` and `Zaifeng Gao` from `Zhihan Gao` — a
+surname-plus-initial rule would wrongly join those last two, which is why it is not used.
+
+Two genuinely different people sharing a first and last name would be merged. No instance exists in
+the ECVP, VSS or IMRF programmes, and the data carries no signal that would separate them: the
+names that look suspicious on an affiliation check (Heiko Schütt, Melissa Võ, Peter Neri) are single
+individuals who publish across institutions. If a real namesake ever appears, an override file
+keyed on the raw strings is a small addition rather than a rewrite.
+
+Details worth knowing:
+
+- The heading shows the **longest** spelling found, as the most complete form of the name.
+- Only authors with work **beyond the abstract being read** are linked. About three names in four
+  appear exactly once, and a link back to the page you are already on reads as broken — so most
+  names stay plain text, and an underline genuinely means "presenting elsewhere too".
+- Names are linked only in the detail card, not on list cards: a list card is itself one large tap
+  target, and nesting smaller ones inside it makes a fumbled tap do the wrong thing.
+- `AuthorSheet` renders as an overlay **inside** the detail card rather than as its own `Modal`.
+  A modal within a `pageSheet` modal is unreliable on iOS, and choosing a presentation replaces what
+  the card shows rather than stacking another layer, so author → paper → co-author → paper walks
+  indefinitely without a pile of sheets to dismiss.
+- The index is built once per programme in `DataContext` and memoised; it is 2,100 name slots for
+  ECVP and 4,300 for VSS.
 
 ### What's on now, and session blocks
 
