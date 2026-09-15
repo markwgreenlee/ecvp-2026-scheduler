@@ -223,6 +223,22 @@ Two things the other datasets exposed that the shared code now handles:
 - **Poster blocks are keyed by room.** VSS runs two halls at the same hour; without the room they
   would merge into one block wearing whichever room sorted first.
 
+### Session views
+
+Tapping the session name in a presentation's detail card opens the rest of that session — every talk
+or poster in it, in order, each tappable through to its own abstract. The name carries the count
+(`Motion Perception  ·  all 6`) so it is clear there is something behind it, and it is only a link
+when the session holds more than the presentation being read.
+
+The grouping is `buildBlocks()`, already built for the Now tab, so this reuses the session
+definition rather than inventing a second one: a poster session is one block per hall, and a talk
+session's end is derived from its last talk where the data gives no `session_end`.
+
+The author sheet and the session sheet are one component, `PresentationSheet`. Both want the same
+thing — a list of presentations over the detail card — so they share it, and choosing an entry
+replaces what the card shows rather than stacking another layer. That means author → paper →
+session → another paper walks indefinitely without a pile of sheets to dismiss.
+
 ### Linking authors across the programme
 
 `src/utils/authors.js` answers one question: when are two author strings the same person? The
