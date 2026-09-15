@@ -66,6 +66,7 @@ const conference = {
 
   // --- Calendar export -----------------------------------------------------
   icsFileName: 'ecvp-2026-schedule.ics',
+  scheduleFileName: 'ecvp-2026-my-schedule.json',
   icsProductId: '-//ECVP 2026 Schedule Organizer//EN',
   // Makes event UIDs stable and unique, so re-importing updates events rather
   // than duplicating them, and two apps' events never collide.
