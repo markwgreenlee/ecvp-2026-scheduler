@@ -2,7 +2,7 @@
   "expo": {
     "name": "ECVP 2026 Scheduler",
     "slug": "ecvp-2026-scheduler",
-    "version": "1.9.0",
+    "version": "1.10.0",
     "icon": "./assets/icon.png",
     "orientation": "portrait",
     "platforms": [
@@ -11,7 +11,6 @@
       "web"
     ],
     "web": {
-      "baseUrl": "/ecvp-2026-scheduler",
       "favicon": "./assets/favicon.png",
       "name": "ECVP 2026 Scheduler",
       "shortName": "ECVP 2026",
@@ -34,6 +33,9 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "experiments": {
+      "baseUrl": "/ecvp-2026-scheduler"
+    }
   }
 }
