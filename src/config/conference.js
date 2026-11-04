@@ -8,6 +8,46 @@
  */
 
 const conference = {
+  // --- Meeting identity ----------------------------------------------------
+  // What the Home screen says above the fold. Kept here rather than in the
+  // screen so that next year's build is a config edit, not a code edit.
+  meetingName: 'ECVP 2026',
+  societyName: 'European Conference on Visual Perception',
+  // Left empty until confirmed: the programme data does not carry it, and a
+  // wrong ordinal is worse than none. Home omits the line while it is blank.
+  meetingNumber: '',
+  venueName: 'Bournemouth International Centre',
+  cityLong: 'Bournemouth, UK',
+  dateRange: 'August 23 – 27, 2026',
+  firstDate: '2026-08-23',
+  lastDate: '2026-08-27',
+  // Brand colour, used by every screen rather than hard-coded in each.
+  accentColor: '#16324f',
+
+  // --- Venue ---------------------------------------------------------------
+  // Keys must match the `room` values in the data exactly. `location` is the
+  // part only the venue knows and is omitted from the UI while empty. ECVP
+  // posters carry no room at all, so they simply show without one.
+  rooms: {
+    'Tregonwell Hall': { label: 'Tregonwell Hall', location: '' },
+    'Bayview Suite': { label: 'Bayview Suite', location: '' },
+    'Purbeck Lounge': { label: 'Purbeck Lounge', location: '' },
+    'Bournemouth International Centre': { label: 'Bournemouth International Centre', location: '' },
+    'Pavilion': { label: 'Pavilion', location: '' },
+    'Bournemouth Pier': { label: 'Bournemouth Pier', location: '' },
+    'Russell Cotes Art Gallery & Museum (tbc)': { label: 'Russell Cotes Art Gallery & Museum', location: 'to be confirmed' },
+  },
+  // Floor plans, in order. Metro cannot resolve a require() built at runtime,
+  // so each image is named here:
+  //   { id: 'level-1', name: 'Level 1',
+  //     image: require('../../assets/floors/level-1.png') }
+  // While this is empty the Venue screen shows the room directory instead.
+  floors: [],
+  // Late changes worth interrupting the Home screen for — a moved room, a
+  // cancelled session. Shown as an amber banner, newest first:
+  //   { id: 'room-change-1', title: 'Room change', body: '…' }
+  announcements: [],
+
   // --- Sharing -------------------------------------------------------------
   // Tags a share link so a code from a sibling app is rejected with a message
   // rather than half-read. Must be unique across the three apps.
